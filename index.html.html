@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VéloLog — Bilan Sorties</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #080c10;
+  --surface: #0e1318;
+  --card: #131920;
+  --card2: #181f28;
+  --border: #1e2a35;
+  --border2: #253040;
+  --accent: #00d4ff;
+  --accent2: #ff6b35;
+  --accent3: #39ff8f;
+  --text: #e8f0f8;
+  --muted: #5a7080;
+  --muted2: #8aa0b0;
+  --danger: #ff4060;
+  --yellow: #ffd060;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(0,212,255,0.04) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(255,107,53,0.03) 0%,transparent 50%);pointer-events:none;z-index:0;}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(8,12,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.nav-brand{display:flex;align-items:center;gap:12px;font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;}
+.nav-brand span{color:var(--accent);}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:8px 18px;background:transparent;border:none;color:var(--muted2);font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;border-radius:8px;transition:all 0.2s;position:relative;}
+.nav-tab:hover{color:var(--text);background:rgba(255,255,255,0.04);}
+.nav-tab.active{color:var(--accent);background:rgba(0,212,255,0.08);}
+.nav-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);border-radius:2px 2px 0 0;}
+.nav-right{display:flex;gap:10px;align-items:center;}
+.sync-indicator{display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--muted);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--accent3);}
+.sync-dot.syncing{background:var(--yellow);animation:pulse 1s infinite;}
+.sync-dot.error{background:var(--danger);}
+
+.page{display:none;position:relative;z-index:1;}
+.page.active{display:block;}
+.container{max-width:1200px;margin:0 auto;padding:32px 24px;}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:9px;font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;}
+.btn-primary{background:var(--accent);color:#080c10;}
+.btn-primary:hover{background:#00bce8;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,0.25);}
+.btn-secondary{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn-secondary:hover{background:rgba(0,212,255,0.08);}
+.btn-ghost{background:transparent;color:var(--muted2);border:1px solid var(--border2);}
+.btn-ghost:hover{color:var(--text);}
+.btn-danger{background:rgba(255,64,96,0.12);color:var(--danger);border:1px solid rgba(255,64,96,0.2);}
+.btn-danger:hover{background:rgba(255,64,96,0.2);}
+.btn-green{background:var(--accent3);color:#080c10;}
+.btn-green:hover{background:#2de87a;transform:translateY(-1px);}
+.btn-orange{background:var(--accent2);color:white;}
+.btn-orange:hover{background:#e55a28;}
+
+.dash-hero{padding:40px 0 32px;border-bottom:1px solid var(--border);margin-bottom:32px;}
+.dash-title{font-family:'Barlow Condensed',sans-serif;font-size:3rem;font-weight:900;letter-spacing:3px;line-height:1;margin-bottom:6px;}
+.dash-title span{color:var(--accent);}
+.dash-sub{color:var(--muted2);font-size:0.9rem;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:32px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s;}
+.kpi:hover{border-color:var(--border2);transform:translateY(-2px);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.2s;}
+.kpi:hover::before{opacity:1;}
+.kpi.c1::before{background:linear-gradient(90deg,var(--accent),transparent);}
+.kpi.c2::before{background:linear-gradient(90deg,var(--accent2),transparent);}
+.kpi.c3::before{background:linear-gradient(90deg,var(--accent3),transparent);}
+.kpi.c4::before{background:linear-gradient(90deg,var(--yellow),transparent);}
+.kpi-icon{font-size:1.2rem;margin-bottom:10px;opacity:0.7;}
+.kpi-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:700;letter-spacing:1px;line-height:1;}
+.kpi-unit{font-size:0.72rem;color:var(--muted);margin-top:3px;}
+.kpi.c1 .kpi-val{color:var(--accent);}
+.kpi.c2 .kpi-val{color:var(--accent2);}
+.kpi.c3 .kpi-val{color:var(--accent3);}
+.kpi.c4 .kpi-val{color:var(--yellow);}
+
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 20px 16px;}
+.chart-card.full{grid-column:1/-1;}
+.chart-label{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;}
+
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;letter-spacing:2px;}
+.sec-badge{background:rgba(0,212,255,0.1);color:var(--accent);border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:600;margin-left:10px;}
+
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:32px;}
+.table-search{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.search-input{flex:1;min-width:200px;padding:9px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.85rem;}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{outline:none;border-color:var(--accent);}
+.year-filter{padding:9px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.85rem;cursor:pointer;}
+.tbl-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+thead th{padding:10px 14px;text-align:left;background:var(--surface);color:var(--muted);font-weight:600;text-transform:uppercase;font-size:0.7rem;letter-spacing:1px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--text);}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody td{padding:10px 14px;white-space:nowrap;}
+tbody td.num{text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;}
+tbody td.date-col{color:var(--muted2);font-size:0.8rem;}
+tbody td.name-col{font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;}
+.empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
+.empty-icon{font-size:3rem;margin-bottom:12px;opacity:0.4;}
+
+.import-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px;}
+.import-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;}
+.import-card h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:20px;}
+.dropzone{border:2px dashed var(--border2);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.25s;background:var(--surface);}
+.dropzone:hover,.dropzone.over{border-color:var(--accent);background:rgba(0,212,255,0.04);}
+.dropzone.loaded{border-color:var(--accent3);border-style:solid;background:rgba(57,255,143,0.04);}
+.dz-icon{font-size:2.5rem;margin-bottom:12px;display:block;}
+.dz-title{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;letter-spacing:1px;margin-bottom:6px;}
+.dz-sub{font-size:0.8rem;color:var(--muted);}
+.dz-ok{font-size:0.78rem;color:var(--accent3);margin-top:8px;font-weight:600;}
+.result-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:20px;display:none;}
+.result-card.show{display:block;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;}
+.result-item{background:var(--card);border-radius:8px;padding:10px 14px;}
+.result-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.result-val{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;color:var(--accent);font-weight:700;}
+
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:28px;}
+.year-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;}
+.year-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;}
+.year-card:nth-child(1)::before{background:var(--accent);}
+.year-card:nth-child(2)::before{background:var(--accent2);}
+.year-card:nth-child(3)::before{background:var(--accent3);}
+.year-card:nth-child(4)::before{background:var(--yellow);}
+.year-num{font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:900;letter-spacing:2px;color:var(--text);opacity:0.15;position:absolute;top:10px;right:14px;}
+.year-stat{margin-bottom:8px;}
+.year-stat-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.year-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:28px;width:90%;max-width:480px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal h3{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;letter-spacing:2px;margin-bottom:20px;color:var(--accent);}
+.form-row{margin-bottom:16px;}
+.form-label{font-size:0.78rem;color:var(--muted2);display:block;margin-bottom:6px;font-weight:500;}
+.form-input{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.88rem;}
+.form-input:focus{outline:none;border-color:var(--accent);}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+
+.toast{position:fixed;bottom:28px;right:28px;z-index:300;background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:12px;font-size:0.88rem;min-width:260px;transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-left:3px solid var(--accent3);}
+.toast.error{border-left:3px solid var(--danger);}
+.cat-btn{padding:8px 18px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--muted2);font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.cat-btn:hover{border-color:var(--accent);color:var(--text);}
+.cat-btn.active{background:rgba(0,212,255,0.12);border-color:var(--accent);color:var(--accent);}
+.cat-btn#cat-mtb.active{background:rgba(57,255,143,0.12);border-color:var(--accent3);color:var(--accent3);}
+.cat-btn#cat-autre.active{background:rgba(255,107,53,0.12);border-color:var(--accent2);color:var(--accent2);}
+.cat-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;letter-spacing:1px;}
+.cat-badge.route{background:rgba(0,212,255,0.12);color:var(--accent);border:1px solid var(--accent);}
+.cat-badge.mtb{background:rgba(57,255,143,0.12);color:var(--accent3);border:1px solid var(--accent3);}
+.cat-badge.autre{background:rgba(255,107,53,0.12);color:var(--accent2);border:1px solid var(--accent2);}
+.detail-stat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.detail-stat:last-child{border-bottom:none;}
+.detail-stat-label{font-size:0.78rem;color:var(--muted2);}
+.detail-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text);}
+
+.spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;margin:0 auto 12px;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.divider{height:1px;background:var(--border);margin:28px 0;}
+footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;color:var(--muted);font-size:0.75rem;position:relative;z-index:1;}
+
+@media(max-width:768px){
+  .charts-row{grid-template-columns:1fr;}
+  .import-layout{grid-template-columns:1fr;}
+  nav{padding:0 12px;}
+  .nav-tabs .nav-tab{padding:6px 10px;font-size:0.78rem;}
+  .container{padding:16px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">🚴 <span>VÉLO</span>LOG</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="showPage('sorties')">Mes sorties</button>
+    <button class="nav-tab" onclick="showPage('import')">Importer GPX</button>
+    <button class="nav-tab" onclick="showPage('compare')">Comparer</button>
+  </div>
+  <div class="nav-right">
+    <div class="sync-indicator">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Connecté</span>
+    </div>
+    <button class="btn btn-ghost" onclick="exportExcel()">⬇ Excel</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+<div class="container">
+  <div class="dash-hero">
+    <div class="dash-title">BILAN <span>VÉLO</span></div>
+    <div class="dash-sub" id="dash-sub">Chargement…</div>
+  </div>
+  <div id="loading-dash" style="text-align:center;padding:60px 0;">
+    <div class="spinner"></div>
+    <div style="color:var(--muted);font-size:0.9rem;">Chargement de vos données…</div>
+  </div>
+  <div id="dash-content" style="display:none;">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="charts-row">
+      <div class="chart-card full"><div class="chart-label">📅 Distance par mois — année en cours</div><canvas id="chartMois" height="80"></canvas></div>
+      <div class="chart-card"><div class="chart-label">📈 Cumul kilométrique</div><canvas id="chartCumul" height="140"></canvas></div>
+      <div class="chart-card"><div class="chart-label">⛰ Dénivelé par mois</div><canvas id="chartDeniv" height="140"></canvas></div>
+    </div>
+    <div class="sec-head">
+      <div class="sec-title">DERNIÈRES SORTIES <span class="sec-badge" id="badge-recent"></span></div>
+    </div>
+    <div class="table-wrap">
+      <div class="tbl-scroll"><table><thead><tr><th>Date</th><th>Trace</th><th>Dist.</th><th>Déniv+</th><th>Durée</th><th>V.moy.</th></tr></thead><tbody id="tbody-recent"></tbody></table></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SORTIES -->
+<div class="page" id="page-sorties">
+<div class="container">
+  <div style="padding:32px 0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;letter-spacing:3px;">MES SORTIES</div>
+      <div style="color:var(--muted2);font-size:0.85rem;margin-top:4px;" id="sorties-count"></div>
+    </div>
+    <button class="btn btn-primary" onclick="openManualModal()">+ Ajouter manuellement</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-search">
+      <input class="search-input" id="search-input" placeholder="🔍  Rechercher une trace…" oninput="renderSortiesTable()">
+      <select class="year-filter" id="year-filter" onchange="renderSortiesTable()"><option value="">Toutes les années</option></select>
+      <select class="year-filter" id="sort-field" onchange="renderSortiesTable()">
+        <option value="date">Trier par date</option>
+        <option value="dist">Trier par distance</option>
+        <option value="deniv">Trier par dénivelé</option>
+      </select>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr>
+          <th>Date</th><th>Trace</th><th>Dist.(km)</th><th>Déniv+(m)</th>
+          <th>Durée</th><th>V.glob.</th><th>V.dépl.</th>
+          <th>D.mont.(km)</th><th>Pente</th><th>Cumul(km)</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-sorties"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- IMPORT -->
+<div class="page" id="page-import">
+<div class="container">
+  <div style="padding:32px 0 8px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;letter-spacing:3px;">IMPORTER <span style="color:var(--accent);">GPX</span></div>
+    <div style="color:var(--muted2);font-size:0.85rem;margin-top:4px;">Glissez votre trace Strava — sauvegarde automatique dans le cloud ☁️</div>
+  </div>
+  <div class="import-layout">
+    <div>
+      <div class="import-card">
+        <h3>📂 Fichier GPX</h3>
+        <div class="dropzone" id="dz" onclick="document.getElementById('gpx-input').click()">
+          <span class="dz-icon">🗺️</span>
+          <div class="dz-title">Déposez votre .gpx ici</div>
+          <p class="dz-sub">Compatible Strava, Garmin, Komoot…</p>
+          <div class="dz-ok" id="dz-ok"></div>
+        </div>
+        <input type="file" id="gpx-input" accept=".gpx" style="display:none" onchange="handleGPX(this.files[0])">
+        <input type="file" id="gpx-multi-input" accept=".gpx" multiple style="display:none" onchange="handleMultiGPX(this.files)">
+        <button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="document.getElementById('gpx-multi-input').click()">
+          📂 Importer un dossier (plusieurs fichiers)
+        </button>
+        <div id="import-loading" style="display:none;text-align:center;padding:20px;">
+          <div class="spinner"></div>
+          <div style="color:var(--muted);font-size:0.85rem;">Analyse en cours…</div>
+        </div>
+        <div class="result-card" id="result-card">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--accent3);margin-bottom:4px;">✓ TRACE ANALYSÉE</div>
+          <div style="font-size:0.9rem;font-weight:600;" id="result-name"></div>
+          <div style="font-size:0.78rem;color:var(--muted2);margin-bottom:12px;" id="result-date"></div>
+          <div class="result-grid" id="result-grid"></div>
+          <div style="margin-bottom:14px;">
+            <div style="font-size:0.75rem;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600;">Type de sortie</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="cat-btn active" id="cat-route" onclick="setCategorie('Route')">🚴 Route</button>
+              <button class="cat-btn" id="cat-mtb" onclick="setCategorie('Mtb')">🚵 Mtb</button>
+              <button class="cat-btn" id="cat-autre" onclick="setCategorie('Autre')">🚲 Autre</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-green" onclick="addCurrentGPX()">☁️ Sauvegarder dans le cloud</button>
+            <button class="btn btn-ghost" onclick="resetImport()">✕ Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="import-card">
+        <h3>☁️ Stockage cloud</h3>
+        <div style="color:var(--muted2);font-size:0.85rem;line-height:1.8;">
+          Vos données sont sauvegardées dans <strong style="color:var(--accent);">Supabase</strong> — accessibles depuis n'importe quel appareil.<br><br>
+          <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:8px;padding:12px 14px;margin-bottom:12px;">
+            <div class="sync-dot" id="sync-dot2"></div>
+            <span id="sync-status-text" style="font-size:0.82rem;">Connexion en cours…</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <h3>📊 Données extraites</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:0.82rem;color:var(--muted2);">
+          <div>📅 Date et heure</div><div>🏃 Nom de la trace</div>
+          <div>📏 Distance totale</div><div>⛰ Dénivelé +/-</div>
+          <div>⏱ Durée globale</div><div>🚴 Durée déplacement</div>
+          <div>☕ Durée pause</div><div>⚡ Vitesse max</div>
+          <div>🌐 Vit. moy. globale</div><div>🚀 Vit. moy. dépl.</div>
+          <div>📈 Distance montée</div><div>📐 Pente moyenne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- COMPARE -->
+<div class="page" id="page-compare">
+<div class="container">
+  <div style="padding:32px 0 28px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;letter-spacing:3px;">COMPARER <span style="color:var(--accent);">LES ANNÉES</span></div>
+  </div>
+  <div class="compare-grid" id="compare-grid"></div>
+  <div class="charts-row">
+    <div class="chart-card full"><div class="chart-label">📊 Distance totale par année</div><canvas id="chartAnnees" height="80"></canvas></div>
+    <div class="chart-card"><div class="chart-label">⛰ Dénivelé cumulé par année</div><canvas id="chartDenivAnnees" height="140"></canvas></div>
+    <div class="chart-card"><div class="chart-label">🔢 Nombre de sorties par année</div><canvas id="chartNbAnnees" height="140"></canvas></div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>+ AJOUTER UNE SORTIE</h3>
+    <div class="form-row"><label class="form-label">Date</label><input class="form-input" type="date" id="m-date"></div>
+    <div class="form-row"><label class="form-label">Nom de la trace</label><input class="form-input" type="text" id="m-nom" placeholder="Ex: Route Col de Fay"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row"><label class="form-label">Distance (km)</label><input class="form-input" type="number" step="0.01" id="m-dist"></div>
+      <div class="form-row"><label class="form-label">Dénivelé+ (m)</label><input class="form-input" type="number" id="m-deniv"></div>
+      <div class="form-row"><label class="form-label">Durée globale (h:mm:ss)</label><input class="form-input" type="text" id="m-duree" placeholder="1:30:00"></div>
+      <div class="form-row"><label class="form-label">Durée déplacement</label><input class="form-input" type="text" id="m-dureedepl" placeholder="1:25:00"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveManual()">☁️ Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="toast-icon"></span><span id="toast-msg"></span></div>
+<!-- DETAIL -->
+<div class="page" id="page-detail">
+<div class="container">
+  <div style="padding:28px 0 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <button class="btn btn-ghost" onclick="showPage('sorties')">← Retour</button>
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;letter-spacing:2px;" id="detail-titre"></div>
+      <div style="color:var(--muted2);font-size:0.85rem;margin-top:2px;" id="detail-date"></div>
+    </div>
+    <div id="detail-cat-badge" style="margin-left:auto;"></div>
+  </div>
+
+  <!-- KPI vignettes -->
+  <div class="kpi-grid" id="detail-kpis"></div>
+
+  <!-- Infos secondaires -->
+  <div class="charts-row" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="chart-card">
+      <div class="chart-label">⏱ Durées</div>
+      <div id="detail-durees"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-label">📈 Montée</div>
+      <div id="detail-montee"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-label">🏔 Altitude</div>
+      <div id="detail-altitude"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<footer>VéloLog — Données synchronisées via Supabase ☁️ · Accessible depuis tous vos appareils</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  SUPABASE CONFIG
+// ══════════════════════════════════════════════════════════
+const SUPA_URL = 'https://lxanrdnrzdgsulpmbfyc.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4YW5yZG5yemRnc3VscG1iZnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMTE3NjMsImV4cCI6MjA4ODY4Nzc2M30.2J8d2mZOjJ66vnK_ZVwgu9wnok9tr4pD8OAMC7YLn10';
+
+const headers = {
+  'Content-Type': 'application/json',
+  'apikey': SUPA_KEY,
+  'Authorization': 'Bearer ' + SUPA_KEY,
+  'Prefer': 'return=representation'
+};
+
+async function dbGet() {
+  const r = await fetch(`${SUPA_URL}/rest/v1/sorties?order=date_depart.desc`, { headers });
+  if(!r.ok) throw new Error('Erreur chargement');
+  return await r.json();
+}
+
+async function dbInsert(s) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/sorties`, {
+    method:'POST', headers,
+    body: JSON.stringify(toRow(s))
+  });
+  if(!r.ok) { const e = await r.text(); throw new Error(e); }
+  return await r.json();
+}
+
+async function dbDelete(id) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/sorties?id=eq.${id}`, {
+    method:'DELETE', headers
+  });
+  if(!r.ok) throw new Error('Erreur suppression');
+}
+
+function toRow(s) {
+  return {
+    nom: s.nom||'',
+    categorie: s.categorie||'Autre',
+    puissance_moy: s.puissanceMoy||null,
+    puissance_max: s.puissanceMax||null,
+    cadence_moy: s.cadenceMoy||null,
+    cadence_max: s.cadenceMax||null,
+    temp_moy: s.tempMoy||null,
+    temp_min: s.tempMin||null,
+    temp_max: s.tempMax||null,
+    date_depart: s.dateDebut ? new Date(s.dateDebut).toISOString() : null,
+    annee: s.annee || new Date().getFullYear(),
+    dist: +s.dist||0,
+    deniv_pos: +s.denivPos||0,
+    deniv_neg: +s.denivNeg||0,
+    duree_glob: +s.dureeGlob||0,
+    duree_depl: +s.dureeDepl||0,
+    duree_pause: +s.dureePause||0,
+    vit_glob: +s.vitGlob||0,
+    vit_depl: +s.vitDepl||0,
+    vit_max: +s.vitMax||0,
+    dist_montee: +s.distMontee||0,
+    duree_montee: +s.dureeMontee||0,
+    vit_montee: +s.vitMontee||0,
+    pente: +s.pente||0,
+    alt_min: s.altMin||null,
+    alt_max: s.altMax||null
+  };
+}
+
+function fromRow(r) {
+  return {
+    id: r.id,
+    nom: r.nom,
+    categorie: r.categorie||'Autre',
+    puissanceMoy: r.puissance_moy,
+    puissanceMax: r.puissance_max,
+    cadenceMoy: r.cadence_moy,
+    cadenceMax: r.cadence_max,
+    tempMoy: r.temp_moy,
+    tempMin: r.temp_min,
+    tempMax: r.temp_max,
+    dateDebut: r.date_depart,
+    annee: r.annee,
+    dist: r.dist,
+    denivPos: r.deniv_pos,
+    denivNeg: r.deniv_neg,
+    dureeGlob: r.duree_glob,
+    dureeDepl: r.duree_depl,
+    dureePause: r.duree_pause,
+    vitGlob: r.vit_glob,
+    vitDepl: r.vit_depl,
+    vitMax: r.vit_max,
+    distMontee: r.dist_montee,
+    dureeMontee: r.duree_montee,
+    vitMontee: r.vit_montee,
+    pente: r.pente,
+    altMin: r.alt_min,
+    altMax: r.alt_max
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let sorties = [];
+let currentGPX = null;
+let categorieGPX = 'Route'; // défaut
+let sortField = 'date';
+let sortDir = 1;
+let chartMois, chartCumul, chartDeniv, chartAnnees, chartDenivAnnees, chartNbAnnees;
+
+// ══════════════════════════════════════════════════════════
+//  SYNC INDICATOR
+// ══════════════════════════════════════════════════════════
+function setSyncState(state) {
+  const dot1 = document.getElementById('sync-dot');
+  const dot2 = document.getElementById('sync-dot2');
+  const lbl = document.getElementById('sync-label');
+  const txt = document.getElementById('sync-status-text');
+  const states = {
+    ok:    { cls:'',        lbl:'Connecté',      txt:'✅ Connecté à Supabase — données synchronisées' },
+    sync:  { cls:'syncing', lbl:'Sync…',         txt:'🔄 Synchronisation en cours…' },
+    error: { cls:'error',   lbl:'Hors ligne',    txt:'❌ Erreur de connexion — vérifiez votre réseau' }
+  };
+  const s = states[state]||states.ok;
+  [dot1,dot2].forEach(d=>{ if(d){d.className='sync-dot '+(s.cls||'');} });
+  if(lbl) lbl.textContent = s.lbl;
+  if(txt) txt.textContent = s.txt;
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+async function init() {
+  setSyncState('sync');
+  try {
+    const rows = await dbGet();
+    sorties = rows.map(fromRow);
+    setSyncState('ok');
+  } catch(e) {
+    setSyncState('error');
+    toast('Erreur de connexion Supabase', 'error');
+  }
+  renderDashboard();
+  setupDrop();
+}
+
+// ══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>{
+    if(t.getAttribute('onclick').includes(id)) t.classList.add('active');
+  });
+  if(id==='dashboard') renderDashboard();
+  if(id==='sorties') { renderSortiesTable(); populateYearFilter(); }
+  if(id==='compare') renderCompare();
+}
+
+// ══════════════════════════════════════════════════════════
+//  GPX PARSER
+// ══════════════════════════════════════════════════════════
+function setupDrop() {
+  const dz = document.getElementById('dz');
+  dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave', ()=>dz.classList.remove('over'));
+  dz.addEventListener('drop', e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])handleGPX(e.dataTransfer.files[0]);});
+}
+
+async function handleMultiGPX(files) {
+  if(!files||!files.length) return;
+  const arr = Array.from(files).filter(f=>f.name.toLowerCase().endsWith('.gpx'));
+  if(!arr.length){ toast('Aucun fichier GPX sélectionné','error'); return; }
+
+  arr.sort((a,b)=>a.name.localeCompare(b.name));
+
+  const loadingEl = document.getElementById('import-loading');
+  const loadingTxt = loadingEl.querySelector('div');
+  loadingEl.style.display='block';
+  document.getElementById('result-card').classList.remove('show');
+
+  let ok=0, erreurs=0, doublons=0;
+  setSyncState('sync');
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  for(let i=0; i<arr.length; i++) {
+    const file = arr[i];
+    loadingTxt.textContent = `${i+1} / ${arr.length} — ${file.name.substring(0,30)}`;
+    try {
+      // Lecture du fichier
+      const xml = await readFileAsText(file);
+      if(!xml || xml.length < 50){ erreurs++; continue; }
+
+      // Parsing
+      let gpx;
+      try { gpx = parseGPX(xml, file.name); } catch(e){ erreurs++; continue; }
+      if(!gpx){ erreurs++; continue; }
+
+      // Anti-doublon
+      const dateG = gpx.dateDebut ? new Date(gpx.dateDebut).toLocaleDateString('fr-FR') : '';
+      const exists = sorties.some(s => {
+        const dateS = s.dateDebut ? new Date(s.dateDebut).toLocaleDateString('fr-FR') : '';
+        return dateS===dateG && Math.abs((+s.dist||0)-(+gpx.dist||0))<0.5;
+      });
+      if(exists){ doublons++; continue; }
+
+      // Catégorie auto
+      const nom = (gpx.nom||'').toLowerCase();
+      gpx.categorie = nom.startsWith('mtb') ? 'Mtb' : nom.startsWith('route') ? 'Route' : 'Autre';
+
+      // Pause toutes les 5 insertions pour ne pas surcharger Supabase
+      if(ok>0 && ok%5===0) await sleep(300);
+
+      const rows = await dbInsert(gpx);
+      if(rows && rows[0]) sorties.push(fromRow(rows[0]));
+      ok++;
+
+    } catch(e) {
+      console.error('Erreur fichier:', file.name, e);
+      erreurs++;
+    }
+  }
+
+  sorties.sort((a,b)=>new Date(b.dateDebut)-new Date(a.dateDebut));
+  setSyncState('ok');
+  loadingEl.style.display='none';
+  document.getElementById('gpx-multi-input').value='';
+
+  const type = erreurs>0 ? 'error' : 'success';
+  toast(`✓ ${ok} importée(s) · ${doublons} doublon(s) · ${erreurs} erreur(s)`, type);
+  if(ok>0) showPage('dashboard');
+}
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = e => resolve(e.target.result);
+    r.onerror = () => reject(new Error('Lecture impossible'));
+    r.readAsText(file);
+  });
+}
+
+function handleGPX(file) {
+  if(!file||!file.name.toLowerCase().endsWith('.gpx')){toast('Fichier GPX invalide','error');return;}
+  document.getElementById('import-loading').style.display='block';
+  document.getElementById('result-card').classList.remove('show');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      currentGPX = parseGPX(e.target.result, file.name);
+      renderResult(currentGPX);
+      document.getElementById('dz').classList.add('loaded');
+      document.getElementById('dz-ok').textContent = '✓ '+file.name;
+    } catch(err) { toast('Erreur GPX: '+err.message,'error'); }
+    document.getElementById('import-loading').style.display='none';
+  };
+  reader.readAsText(file);
+}
+
+function haversine(lat1,lon1,lat2,lon2) {
+  const R=6371,d2r=Math.PI/180;
+  const dLat=(lat2-lat1)*d2r,dLon=(lon2-lon1)*d2r;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function parseGPX(xml, filename) {
+  let nom = tagVal(xml,'n')||tagVal(xml,'name')||filename.replace('.gpx','');
+  const lats=[],lons=[],eles=[],times=[],powers=[],cads=[],temps=[];
+  const re = /<trkpt([^>]*)>([\s\S]*?)<\/trkpt>/g;
+  let m;
+  while((m=re.exec(xml))!==null) {
+    lats.push(parseFloat(attrVal(m[1],'lat')));
+    lons.push(parseFloat(attrVal(m[1],'lon')));
+    const e=tagVal(m[2],'ele');
+    eles.push(e!==null?parseFloat(e):null);
+    const t=tagVal(m[2],'time');
+    times.push(t?new Date(t):null);
+    const pw=tagVal(m[2],'power');
+    powers.push(pw!==null?parseFloat(pw):null);
+    const cd=tagValNS(m[2],'cad');
+    cads.push(cd!==null?parseFloat(cd):null);
+    const tp=tagValNS(m[2],'atemp');
+    temps.push(tp!==null?parseFloat(tp):null);
+  }
+  if(!lats.length) throw new Error('Aucun point trouvé');
+
+  const hasTime=times.some(t=>t!==null), hasEle=eles.some(e=>e!==null);
+  let distTot=0,distMontee=0,dureeMontee=0,denivPos=0,denivNeg=0,dureeGlob=0,dureeDepl=0,vitMax=0;
+  const tValid=times.filter(t=>t);
+  const dateDebut=hasTime?tValid[0]:null;
+  const dateFin=hasTime?tValid[tValid.length-1]:null;
+  if(hasTime) dureeGlob=(dateFin-dateDebut)/1000;
+
+  // Lissage altitude : moyenne glissante 5 pts → élimine bruit GPS
+  const elesL = eles.map((e,i) => {
+    if(e===null) return null;
+    let s=0, c=0;
+    for(let j=Math.max(0,i-2); j<=Math.min(eles.length-1,i+2); j++) {
+      if(eles[j]!==null){s+=eles[j];c++;}
+    }
+    return c>0 ? s/c : e;
+  });
+
+  for(let i=1;i<lats.length;i++) {
+    const d=haversine(lats[i-1],lons[i-1],lats[i],lons[i]);
+    if(hasTime&&times[i]&&times[i-1]) {
+      const dt=(times[i]-times[i-1])/1000;
+      if(dt>0){
+        const v=d/dt*3600;
+        // Ignore segments aberrants GPS (> 75 km/h)
+        if(v<75){
+          distTot+=d;
+          // Seuil déplacement 3 km/h (proche Strava)
+          if(v>3) dureeDepl+=dt;
+          if(v>vitMax) vitMax=v;
+        }
+      }
+    } else { distTot+=d; }
+    if(hasEle&&elesL[i]!==null&&elesL[i-1]!==null) {
+      const dh=elesL[i]-elesL[i-1];  // altitude lissée
+      if(dh>0){
+        denivPos+=dh;
+        const penteSegment = d>0 ? (dh/(d*1000))*100 : 0;
+        if(penteSegment>=1){distMontee+=d;if(hasTime&&times[i]&&times[i-1])dureeMontee+=(times[i]-times[i-1])/1000;}
+      } else if(dh<0) denivNeg+=Math.abs(dh);
+    }
+  }
+  // Moyennes puissance, cadence, température
+  const avgOf = arr => { const v=arr.filter(x=>x!==null&&x>0); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null; };
+  const maxOf = arr => { const v=arr.filter(x=>x!==null&&x>0); return v.length?Math.max(...v):null; };
+  const puissanceMoy = avgOf(powers);
+  const puissanceMax = maxOf(powers);
+  const cadenceMoy   = avgOf(cads);
+  const cadenceMax   = maxOf(cads);
+  const tempMoy      = avgOf(temps);
+  const tempMin      = temps.filter(x=>x!==null).length ? Math.min(...temps.filter(x=>x!==null)) : null;
+  const tempMax      = temps.filter(x=>x!==null).length ? Math.max(...temps.filter(x=>x!==null)) : null;
+
+  const dureePause=Math.max(0,dureeGlob-dureeDepl);
+  const vitGlob=dureeGlob>0?distTot/(dureeGlob/3600):0;
+  const vitDepl=dureeDepl>0?distTot/(dureeDepl/3600):0;
+  const vitMontee=dureeMontee>0?distMontee/(dureeMontee/3600):0;
+  const pente=distMontee>0?(denivPos/(distMontee*1000))*100:0;
+  const altMin=hasEle?Math.min(...eles.filter(e=>e!==null)):null;
+  const altMax=hasEle?Math.max(...eles.filter(e=>e!==null)):null;
+
+  return {
+    nom, dateDebut: dateDebut?dateDebut.toISOString():null, dateFin:dateFin?dateFin.toISOString():null,
+    dist:Math.round(distTot*100)/100, denivPos:Math.round(denivPos), denivNeg:Math.round(denivNeg),
+    dureeGlob, dureeDepl, dureePause,
+    vitGlob:Math.round(vitGlob*10)/10, vitDepl:Math.round(vitDepl*10)/10, vitMax:Math.round(vitMax*10)/10,
+    distMontee:Math.round(distMontee*100)/100, dureeMontee, vitMontee:Math.round(vitMontee*10)/10,
+    pente:Math.round(pente*10)/10, altMin, altMax,
+    annee: dateDebut?dateDebut.getFullYear():new Date().getFullYear(),
+    puissanceMoy, puissanceMax, cadenceMoy, cadenceMax,
+    tempMoy, tempMin, tempMax
+  };
+}
+
+function tagVal(txt,tag){const m=txt.match(new RegExp('<'+tag+'>([^<]*)</'+tag+'>'));return m?m[1].trim():null;}
+function tagValNS(txt,tag){const m=txt.match(new RegExp('<[^:]*:'+tag+'>([^<]*)</[^:]*:'+tag+'>'));return m?m[1].trim():null;}
+function attrVal(str,attr){const m=str.match(new RegExp(attr+'=["\']([^"\']+)["\']'));return m?m[1]:'0';}
+
+// ══════════════════════════════════════════════════════════
+//  IMPORT RESULT
+// ══════════════════════════════════════════════════════════
+function setCategorie(cat) {
+  categorieGPX = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  const map = {'Route':'cat-route','Mtb':'cat-mtb','Autre':'cat-autre'};
+  const el = document.getElementById(map[cat]);
+  if(el) el.classList.add('active');
+}
+
+function renderResult(g) {
+  document.getElementById('result-name').textContent = g.nom;
+  document.getElementById('result-date').textContent = g.dateDebut
+    ? new Date(g.dateDebut).toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
+    : 'Date inconnue';
+  const items=[
+    ['Distance',g.dist+' km'],['Dénivelé +',g.denivPos+' m'],
+    ['Durée globale',fmtDur(g.dureeGlob)],['Durée déplacement',fmtDur(g.dureeDepl)],
+    ['Durée pause',fmtDur(g.dureePause)],['Vit. moy. globale',g.vitGlob+' km/h'],
+    ['Vit. moy. dépl.',g.vitDepl+' km/h'],['Vitesse max',g.vitMax+' km/h'],
+    ['Distance montée',g.distMontee+' km'],['Pente moyenne',g.pente+' %'],
+  ];
+  document.getElementById('result-grid').innerHTML = items.map(([l,v])=>`
+    <div class="result-item"><div class="result-label">${l}</div><div class="result-val">${v||'—'}</div></div>`).join('');
+  document.getElementById('result-card').classList.add('show');
+  // Pré-sélectionner selon le nom
+  const nom = (g.nom||'').toLowerCase();
+  if(nom.startsWith('mtb')) setCategorie('Mtb');
+  else if(nom.startsWith('route')) setCategorie('Route');
+  else setCategorie('Autre');
+}
+
+async function addCurrentGPX() {
+  if(!currentGPX) return;
+  setSyncState('sync');
+  try {
+    currentGPX.categorie = categorieGPX;
+    const rows = await dbInsert(currentGPX);
+    sorties.push(fromRow(rows[0]));
+    sorties.sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
+    setSyncState('ok');
+    toast('Sortie sauvegardée dans le cloud ! ☁️✓','success');
+    resetImport();
+    showPage('dashboard');
+  } catch(e) {
+    setSyncState('error');
+    toast('Erreur sauvegarde : '+e.message,'error');
+  }
+}
+
+function resetImport() {
+  currentGPX=null;
+  categorieGPX='Route';
+  document.getElementById('dz').classList.remove('loaded');
+  document.getElementById('dz-ok').textContent='';
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('gpx-input').value='';
+}
+
+// ══════════════════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════════════════
+function renderDashboard() {
+  document.getElementById('loading-dash').style.display='none';
+  document.getElementById('dash-content').style.display='block';
+
+  const annee=new Date().getFullYear();
+  const thisYear=sorties.filter(s=>s.annee===annee);
+  document.getElementById('dash-sub').textContent=
+    `${sorties.length} sortie${sorties.length>1?'s':''} · Année ${annee} : ${thisYear.length} sortie${thisYear.length>1?'s':''}`;
+
+  const sumDist=arr=>arr.reduce((a,s)=>a+(+s.dist||0),0);
+  const sumDeniv=arr=>arr.reduce((a,s)=>a+(+s.denivPos||0),0);
+  const avgVit=arr=>{const v=arr.filter(s=>s.vitGlob>0);return v.length?v.reduce((a,s)=>a+s.vitGlob,0)/v.length:0;};
+
+  // Détection par catégorie (champ dédié) avec fallback sur le nom
+  const isRoute = s => (s.categorie==='Route') || (!s.categorie && s.nom && s.nom.toLowerCase().startsWith('route'));
+  const isVTT   = s => (s.categorie==='Mtb')   || (!s.categorie && s.nom && s.nom.toLowerCase().startsWith('mtb'));
+  const route = thisYear.filter(isRoute);
+  const vtt   = thisYear.filter(isVTT);
+  const avgVitRoute = arr => { const v=arr.filter(s=>s.vitGlob>0); return v.length?v.reduce((a,s)=>a+s.vitGlob,0)/v.length:0; };
+
+  // Sortie la plus longue (toutes années)
+  const sortieMax = sorties.reduce((a,s)=>(+s.dist||0)>(+a.dist||0)?s:a, sorties[0]||{});
+  const distMax = sortieMax ? (+sortieMax.dist||0).toFixed(1) : '—';
+  const distMaxUnit = sortieMax && sortieMax.nom
+    ? sortieMax.nom.substring(0,25)+(sortieMax.nom.length>25?'…':'') + ' · ' + fmtDate(sortieMax.dateDebut)
+    : 'km en une sortie';
+
+  const kpis=[
+    {c:'c1',icon:'📏',label:'Distance '+annee,val:sumDist(thisYear).toFixed(0),unit:'km parcourus'},
+    {c:'c2',icon:'⛰',label:'Dénivelé '+annee,val:sumDeniv(thisYear).toFixed(0),unit:'mètres de D+'},
+    {c:'c3',icon:'🚴',label:'Sorties '+annee,val:thisYear.length,unit:'sorties enregistrées'},
+    {c:'c4',icon:'🚴 Route',label:'Vit. moy. Route '+annee,val:avgVitRoute(route).toFixed(1),unit:'km/h · '+route.length+' sortie'+(route.length>1?'s':'')},
+    {c:'c4',icon:'🚵 VTT',label:'Vit. moy. VTT '+annee,val:avgVitRoute(vtt).toFixed(1),unit:'km/h · '+vtt.length+' sortie'+(vtt.length>1?'s':'')},
+    // Distances Route vs VTT année en cours
+    {c:'c1',icon:'🚴',label:'Route vs VTT — '+annee,
+      val:sumDist(route).toFixed(0)+' / '+sumDist(vtt).toFixed(0),
+      unit:'km Route / Mtb · '+(sumDist(thisYear)>0?(sumDist(route)/sumDist(thisYear)*100).toFixed(0)+'% Route — '+(sumDist(vtt)/sumDist(thisYear)*100).toFixed(0)+'% Mtb':'—')},
+    // Distances Route vs VTT toutes années
+    {c:'c2',icon:'🏅',label:'Route vs VTT — Total',
+      val:sumDist(sorties.filter(isRoute)).toFixed(0)+' / '+sumDist(sorties.filter(isVTT)).toFixed(0),
+      unit:'km Route / Mtb · '+(sumDist(sorties)>0?(sumDist(sorties.filter(isRoute))/sumDist(sorties)*100).toFixed(0)+'% Route — '+(sumDist(sorties.filter(isVTT))/sumDist(sorties)*100).toFixed(0)+'% Mtb':'—')},
+    {c:'c1',icon:'🏆',label:'Total km',val:sumDist(sorties).toFixed(0),unit:'km cumulés'},
+    {c:'c2',icon:'🗻',label:'Total déniv.',val:sumDeniv(sorties).toFixed(0),unit:'mètres D+'},
+    {c:'c3',icon:'📅',label:'Total sorties',val:sorties.length,unit:'toutes années'},
+    {c:'c4',icon:'📈',label:'Sortie la plus longue',val:distMax,unit:distMaxUnit},
+  ];
+  document.getElementById('kpi-grid').innerHTML=kpis.map(k=>`
+    <div class="kpi ${k.c}"><div class="kpi-icon">${k.icon}</div><div class="kpi-label">${k.label}</div><div class="kpi-val">${k.val}</div><div class="kpi-unit">${k.unit}</div></div>`).join('');
+
+  const mois=Array(12).fill(0), moisD=Array(12).fill(0);
+  thisYear.forEach(s=>{if(s.dateDebut){const m=new Date(s.dateDebut).getMonth();mois[m]+=(+s.dist||0);moisD[m]+=(+s.denivPos||0);}});
+  const lblMois=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+
+  if(chartMois) chartMois.destroy();
+  chartMois=new Chart(document.getElementById('chartMois'),{type:'bar',data:{labels:lblMois,datasets:[{label:'Distance (km)',data:mois,backgroundColor:'rgba(0,212,255,0.25)',borderColor:'#00d4ff',borderWidth:2,borderRadius:6}]},options:chartOpts('km')});
+
+  const sorted=[...thisYear].sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
+  let cumul=0;
+  const cumulData=sorted.map(s=>{cumul+=+s.dist||0;return{x:new Date(s.dateDebut).toLocaleDateString('fr-FR',{month:'short',day:'numeric'}),y:Math.round(cumul*10)/10};});
+  if(chartCumul) chartCumul.destroy();
+  chartCumul=new Chart(document.getElementById('chartCumul'),{type:'line',data:{labels:cumulData.map(d=>d.x),datasets:[{label:'Cumul km',data:cumulData.map(d=>d.y),borderColor:'#39ff8f',backgroundColor:'rgba(57,255,143,0.08)',fill:true,tension:0.3,pointRadius:2,borderWidth:2}]},options:chartOpts('km')});
+
+  if(chartDeniv) chartDeniv.destroy();
+  chartDeniv=new Chart(document.getElementById('chartDeniv'),{type:'bar',data:{labels:lblMois,datasets:[{label:'Dénivelé (m)',data:moisD,backgroundColor:'rgba(255,107,53,0.3)',borderColor:'#ff6b35',borderWidth:2,borderRadius:6}]},options:chartOpts('m')});
+
+  const recent=[...sorties].sort((a,b)=>new Date(b.dateDebut)-new Date(a.dateDebut)).slice(0,8);
+  document.getElementById('badge-recent').textContent=recent.length;
+  document.getElementById('tbody-recent').innerHTML=recent.length?recent.map(s=>`
+    <tr><td class="date-col">${fmtDate(s.dateDebut)}</td><td class="name-col">${s.nom}</td><td class="num">${(+s.dist||0).toFixed(2)}</td><td class="num">${s.denivPos||0}</td><td class="num">${fmtDur(s.dureeGlob)}</td><td class="num">${s.vitGlob||'—'}</td></tr>`).join('')
+    :'<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🚴</div><div>Aucune sortie — importez un GPX !</div></div></td></tr>';
+}
+
+function chartOpts(unit){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>i.raw+' '+unit}}},scales:{x:{ticks:{color:'#5a7080',font:{size:11}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#5a7080',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}};}
+
+// ══════════════════════════════════════════════════════════
+//  TABLE SORTIES
+// ══════════════════════════════════════════════════════════
+function populateYearFilter(){
+  const years=[...new Set(sorties.map(s=>s.annee))].sort((a,b)=>b-a);
+  const sel=document.getElementById('year-filter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Toutes les années</option>'+years.map(y=>`<option value="${y}"${y==cur?'selected':''}>${y}</option>`).join('');
+}
+
+function toggleSort(field){if(sortField===field)sortDir*=-1;else{sortField=field;sortDir=-1;}renderSortiesTable();}
+
+function renderSortiesTable(){
+  const search=document.getElementById('search-input').value.toLowerCase();
+  const yearF=document.getElementById('year-filter').value;
+  const field=document.getElementById('sort-field').value||sortField;
+  let data=sorties.filter(s=>{
+    const ms=!search||s.nom.toLowerCase().includes(search);
+    const my=!yearF||String(s.annee)===yearF;
+    return ms&&my;
+  });
+  data.sort((a,b)=>{
+    if(field==='dist') return sortDir*((+b.dist||0)-(+a.dist||0));
+    if(field==='deniv') return sortDir*((+b.denivPos||0)-(+a.denivPos||0));
+    return sortDir*(new Date(b.dateDebut)-new Date(a.dateDebut));
+  });
+  document.getElementById('sorties-count').textContent=`${data.length} sortie${data.length>1?'s':''} affichée${data.length>1?'s':''}`;
+  let cumul=0;
+  document.getElementById('tbody-sorties').innerHTML=data.length?data.map(s=>{
+    cumul+=+s.dist||0;
+    return `<tr>
+      <td class="date-col">${fmtDate(s.dateDebut)}</td>
+      <td class="name-col" title="${s.nom}" style="cursor:pointer;color:var(--accent);" onclick="showDetail(${s.id})">${s.nom}</td>
+      <td class="num">${(+s.dist||0).toFixed(2)}</td>
+      <td class="num">${s.denivPos||'—'}</td>
+      <td class="num">${fmtDur(s.dureeGlob)}</td>
+      <td class="num">${s.vitGlob||'—'}</td>
+      <td class="num">${s.vitDepl||'—'}</td>
+      <td class="num">${s.distMontee||'—'}</td>
+      <td class="num">${s.pente?s.pente+'%':'—'}</td>
+      <td class="num" style="color:var(--accent)">${Math.round(cumul*100)/100}</td>
+      <td><button class="btn btn-danger" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteSortie(${s.id})">✕</button></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">🚴</div><div>Aucune sortie trouvée</div></div></td></tr>`;
+}
+
+async function deleteSortie(id){
+  if(!confirm('Supprimer cette sortie ?')) return;
+  setSyncState('sync');
+  try {
+    await dbDelete(id);
+    sorties=sorties.filter(s=>s.id!==id);
+    setSyncState('ok');
+    renderSortiesTable();
+    toast('Sortie supprimée','success');
+  } catch(e) { setSyncState('error'); toast('Erreur suppression','error'); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  COMPARE
+// ══════════════════════════════════════════════════════════
+function renderCompare(){
+  const years=[...new Set(sorties.map(s=>s.annee))].sort((a,b)=>a-b);
+  const colors=['#00d4ff','#ff6b35','#39ff8f','#ffd060','#ff4060','#c084fc'];
+  const byYear={};
+  years.forEach(y=>{
+    const ys=sorties.filter(s=>s.annee===y);
+    byYear[y]={
+      dist:Math.round(ys.reduce((a,s)=>a+(+s.dist||0),0)*10)/10,
+      deniv:Math.round(ys.reduce((a,s)=>a+(+s.denivPos||0),0)),
+      nb:ys.length,
+      avgDist:ys.length?Math.round(ys.reduce((a,s)=>a+(+s.dist||0),0)/ys.length*10)/10:0,
+      vitMoy:ys.filter(s=>s.vitGlob>0).length?Math.round(ys.filter(s=>s.vitGlob>0).reduce((a,s)=>a+s.vitGlob,0)/ys.filter(s=>s.vitGlob>0).length*10)/10:0
+    };
+  });
+  document.getElementById('compare-grid').innerHTML=years.map((y,i)=>`
+    <div class="year-card">
+      <div class="year-num">${y}</div>
+      <div class="year-stat"><div class="year-stat-label">Distance totale</div><div class="year-stat-val" style="color:${colors[i%colors.length]}">${byYear[y].dist} km</div></div>
+      <div class="year-stat"><div class="year-stat-label">Dénivelé cumulé</div><div class="year-stat-val">${byYear[y].deniv} m</div></div>
+      <div class="year-stat"><div class="year-stat-label">Nb sorties</div><div class="year-stat-val">${byYear[y].nb}</div></div>
+      <div class="year-stat"><div class="year-stat-label">Dist. moy./sortie</div><div class="year-stat-val">${byYear[y].avgDist} km</div></div>
+      <div class="year-stat"><div class="year-stat-label">Vit. moy.</div><div class="year-stat-val">${byYear[y].vitMoy||'—'} km/h</div></div>
+    </div>`).join('')||'<div style="color:var(--muted);padding:20px;">Aucune donnée</div>';
+
+  if(chartAnnees) chartAnnees.destroy();
+  chartAnnees=new Chart(document.getElementById('chartAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Distance (km)',data:years.map(y=>byYear[y].dist),backgroundColor:years.map((_,i)=>colors[i%colors.length]+'55'),borderColor:years.map((_,i)=>colors[i%colors.length]),borderWidth:2,borderRadius:8}]},options:chartOpts('km')});
+  if(chartDenivAnnees) chartDenivAnnees.destroy();
+  chartDenivAnnees=new Chart(document.getElementById('chartDenivAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Dénivelé (m)',data:years.map(y=>byYear[y].deniv),backgroundColor:'rgba(255,107,53,0.3)',borderColor:'#ff6b35',borderWidth:2,borderRadius:6}]},options:chartOpts('m')});
+  if(chartNbAnnees) chartNbAnnees.destroy();
+  chartNbAnnees=new Chart(document.getElementById('chartNbAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Sorties',data:years.map(y=>byYear[y].nb),backgroundColor:'rgba(57,255,143,0.25)',borderColor:'#39ff8f',borderWidth:2,borderRadius:6}]},options:chartOpts('sorties')});
+}
+
+// ══════════════════════════════════════════════════════════
+//  EXPORT EXCEL
+// ══════════════════════════════════════════════════════════
+function exportExcel(){
+  if(!sorties.length){toast('Aucune donnée à exporter','error');return;}
+  const wb=XLSX.utils.book_new();
+  const years=[...new Set(sorties.map(s=>s.annee))].sort((a,b)=>b-a);
+  years.forEach(y=>{
+    const ys=sorties.filter(s=>s.annee===y).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
+    const rows=[['Date départ','Nom trace','Distance (km)','Dénivelé positif (m)','Durée','Durée déplacement','Durée pause','Vit.moy.globale','Vit.moy.dépl.','Dist.montée (km)','Durée montée','Vit.montée','Pente moy.(%)','Durée montée (bis)','Cumul VTT (km)']];
+    let cumul=0;
+    ys.forEach(s=>{cumul+=+s.dist||0;rows.push([s.dateDebut?new Date(s.dateDebut).toLocaleDateString('fr-FR'):'',s.nom||'',+s.dist||0,+s.denivPos||0,fmtDur(s.dureeGlob),fmtDur(s.dureeDepl),fmtDur(s.dureePause),+s.vitGlob||0,+s.vitDepl||0,+s.distMontee||0,fmtDur(s.dureeMontee),+s.vitMontee||0,+s.pente||0,fmtDur(s.dureeMontee),Math.round(cumul*100)/100]);});
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:22},{wch:35},{wch:13},{wch:16},{wch:12},{wch:16},{wch:12},{wch:16},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14},{wch:13}];
+    XLSX.utils.book_append_sheet(wb,ws,String(y));
+  });
+  const d=new Date();
+  XLSX.writeFile(wb,`Bilan_Velo_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.xlsx`);
+  toast('Export Excel téléchargé ! ✓','success');
+}
+
+// ══════════════════════════════════════════════════════════
+//  AJOUT MANUEL
+// ══════════════════════════════════════════════════════════
+function openManualModal(){document.getElementById('m-date').value=new Date().toISOString().split('T')[0];document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+async function saveManual(){
+  const dateStr=document.getElementById('m-date').value;
+  const nom=document.getElementById('m-nom').value.trim();
+  const dist=parseFloat(document.getElementById('m-dist').value)||0;
+  const deniv=parseInt(document.getElementById('m-deniv').value)||0;
+  const dureeGlob=parseHMS(document.getElementById('m-duree').value);
+  const dureeDepl=parseHMS(document.getElementById('m-dureedepl').value);
+  if(!nom||!dist){toast('Nom et distance requis','error');return;}
+  const dateDebut=new Date(dateStr||Date.now());
+  const s={nom,dateDebut:dateDebut.toISOString(),annee:dateDebut.getFullYear(),dist,denivPos:deniv,denivNeg:0,dureeGlob,dureeDepl,dureePause:Math.max(0,dureeGlob-dureeDepl),vitGlob:dureeGlob>0?Math.round(dist/(dureeGlob/3600)*10)/10:0,vitDepl:0,vitMax:0,distMontee:0,dureeMontee:0,vitMontee:0,pente:0,altMin:null,altMax:null};
+  setSyncState('sync');
+  try {
+    const rows=await dbInsert(s);
+    sorties.push(fromRow(rows[0]));
+    sorties.sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
+    setSyncState('ok');
+    closeModal();
+    renderSortiesTable();
+    toast('Sortie ajoutée dans le cloud ☁️✓','success');
+  } catch(e){setSyncState('error');toast('Erreur: '+e.message,'error');}
+}
+
+// ══════════════════════════════════════════════════════════
+//  PAGE DÉTAIL SORTIE
+// ══════════════════════════════════════════════════════════
+function showDetail(id) {
+  const s = sorties.find(x => x.id === id);
+  if(!s) return;
+
+  // Titre et date
+  document.getElementById('detail-titre').textContent = s.nom || '—';
+  document.getElementById('detail-date').textContent = fmtDate(s.dateDebut);
+
+  // Badge catégorie
+  const cat = (s.categorie||'Autre').toLowerCase();
+  const catLabel = {'route':'🚴 Route','mtb':'🚵 Mtb','autre':'🚲 Autre'}[cat] || s.categorie;
+  document.getElementById('detail-cat-badge').innerHTML = `<span class="cat-badge ${cat}">${catLabel}</span>`;
+
+  // KPI vignettes principales
+  const kpis = [
+    {c:'c1', icon:'📏', label:'Distance',      val:(+s.dist||0).toFixed(2),         unit:'kilomètres'},
+    {c:'c2', icon:'⛰', label:'Dénivelé +',    val:Math.round(+s.denivPos||0),       unit:'mètres D+'},
+    {c:'c3', icon:'⏱', label:'Durée globale', val:fmtDur(s.dureeGlob),             unit:'heure : min : sec'},
+    {c:'c4', icon:'🚴', label:'Durée déplacement', val:fmtDur(s.dureeDepl),         unit:'temps en mouvement'},
+    {c:'c1', icon:'☕', label:'Durée pause',   val:fmtDur(s.dureePause),            unit:'temps à l\'arrêt'},
+    {c:'c2', icon:'🌐', label:'Vit. moy. globale', val:(+s.vitGlob||0).toFixed(1), unit:'km/h'},
+    {c:'c3', icon:'🚀', label:'Vit. moy. dépl.',   val:(+s.vitDepl||0).toFixed(1), unit:'km/h en mouvement'},
+    {c:'c4', icon:'⚡', label:'Vitesse max',   val:(+s.vitMax||0).toFixed(1),       unit:'km/h'},
+    ...(s.puissanceMoy ? [{c:'c1', icon:'⚡', label:'Puissance moy.', val:Math.round(s.puissanceMoy), unit:'watts'}] : []),
+    ...(s.puissanceMax ? [{c:'c2', icon:'🔋', label:'Puissance max',  val:Math.round(s.puissanceMax), unit:'watts'}] : []),
+    ...(s.cadenceMoy   ? [{c:'c3', icon:'🔄', label:'Cadence moy.',   val:Math.round(s.cadenceMoy),   unit:'rpm'}] : []),
+    ...(s.cadenceMax   ? [{c:'c4', icon:'💫', label:'Cadence max',    val:Math.round(s.cadenceMax),   unit:'rpm'}] : []),
+    ...(s.tempMoy!==null&&s.tempMoy!==undefined ? [{c:'c1', icon:'🌡️', label:'Température moy.', val:s.tempMoy!==null?s.tempMoy.toFixed(1):'—', unit:'°C'}] : []),
+  ];
+  document.getElementById('detail-kpis').innerHTML = kpis.map(k=>`
+    <div class="kpi ${k.c}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-val">${k.val||'—'}</div>
+      <div class="kpi-unit">${k.unit}</div>
+    </div>`).join('');
+
+  // Durées détaillées
+  document.getElementById('detail-durees').innerHTML = [
+    ['Durée globale',      fmtDur(s.dureeGlob)],
+    ['Durée déplacement',  fmtDur(s.dureeDepl)],
+    ['Durée pause',        fmtDur(s.dureePause)],
+  ].map(([l,v])=>`<div class="detail-stat"><span class="detail-stat-label">${l}</span><span class="detail-stat-val">${v||'—'}</span></div>`).join('');
+
+  // Montée
+  document.getElementById('detail-montee').innerHTML = [
+    ['Distance montée',    (+s.distMontee||0).toFixed(2)+' km'],
+    ['Durée montée',       fmtDur(s.dureeMontee)],
+    ['Vit. moy. montée',   (+s.vitMontee||0).toFixed(1)+' km/h'],
+    ['Pente moyenne',      (+s.pente||0).toFixed(1)+' %'],
+  ].map(([l,v])=>`<div class="detail-stat"><span class="detail-stat-label">${l}</span><span class="detail-stat-val">${v||'—'}</span></div>`).join('');
+
+  // Altitude
+  document.getElementById('detail-altitude').innerHTML = [
+    ['Altitude min',     s.altMin!==null ? Math.round(s.altMin)+' m' : '—'],
+    ['Altitude max',     s.altMax!==null ? Math.round(s.altMax)+' m' : '—'],
+    ['Dénivelé +',       Math.round(+s.denivPos||0)+' m'],
+    ['Dénivelé -',       Math.round(+s.denivNeg||0)+' m'],
+    ['Température moy.', s.tempMoy!==null&&s.tempMoy!==undefined ? s.tempMoy.toFixed(1)+' °C' : '—'],
+    ['Temp. min / max',  (s.tempMin!==null&&s.tempMin!==undefined ? s.tempMin+' °C' : '—')+' / '+(s.tempMax!==null&&s.tempMax!==undefined ? s.tempMax+' °C' : '—')],
+  ].map(([l,v])=>`<div class="detail-stat"><span class="detail-stat-label">${l}</span><span class="detail-stat-val">${v||'—'}</span></div>`).join('');
+
+  // Afficher la page
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════
+function fmtDur(sec){if(!sec||sec<=0)return'—';const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);return`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
+function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}
+function parseHMS(str){if(!str)return 0;const p=str.split(':').map(Number);if(p.length===3)return p[0]*3600+p[1]*60+p[2];if(p.length===2)return p[0]*3600+p[1]*60;return 0;}
+function toast(msg,type='success'){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.querySelector('.toast-icon').textContent=type==='success'?'✓':'⚠';t.className='toast show '+type;setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ══════════════════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>

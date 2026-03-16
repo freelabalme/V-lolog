@@ -1089,33 +1089,78 @@ function renderCompare(){
     options:chartOpts('km')
   });
 
-  // ── Cumul 5 dernières années + meilleure année ──
+  // ── Cumul 5 dernières années + meilleure année (timeline jours) ──
   const last5 = years.slice(-5);
   const cumulDatasets = [];
   const anneeColors5 = ['#00d4ff','#ff6b35','#39ff8f','#ffd060','#c084fc'];
 
+  // Génère les données jour par jour (1→365) avec cumul
+  function cumulParJour(annee) {
+    const ys = sorties.filter(s=>s.annee===parseInt(annee)).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
+    const pts = new Array(366).fill(null);
+    let cumul = 0;
+    ys.forEach(s => {
+      if(!s.dateDebut) return;
+      const d = new Date(s.dateDebut);
+      const debut = new Date(d.getFullYear(), 0, 1);
+      const jour = Math.floor((d - debut) / (1000*60*60*24));
+      cumul += +s.dist||0;
+      pts[jour] = Math.round(cumul*10)/10;
+    });
+    // Interpoler les jours sans sortie (garder le dernier cumul)
+    let last = 0;
+    for(let i=0; i<366; i++) {
+      if(pts[i]!==null) last=pts[i];
+      else pts[i]=last;
+    }
+    // Couper après le dernier jour réel de l'année
+    const lastSortie = ys[ys.length-1];
+    if(lastSortie && lastSortie.dateDebut) {
+      const d = new Date(lastSortie.dateDebut);
+      const debut = new Date(d.getFullYear(), 0, 1);
+      const dernierJour = Math.floor((d - debut) / (1000*60*60*24));
+      return pts.slice(0, dernierJour+1);
+    }
+    return pts;
+  }
+
   // Meilleure année
-  if(!last5.includes(bestYear)) {
-    const ysB = sorties.filter(s=>s.annee===parseInt(bestYear)).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
-    let c=0; const pts=ysB.map(s=>{c+=+s.dist||0;return Math.round(c*10)/10;});
-    cumulDatasets.push({label:`🏆 ${bestYear}`,data:pts,borderColor:'#ff4060',borderWidth:2,tension:0.3,pointRadius:0,borderDash:[6,3],fill:false});
+  if(!last5.includes(String(bestYear))) {
+    const pts = cumulParJour(bestYear);
+    cumulDatasets.push({label:`🏆 ${bestYear}`,data:pts,borderColor:'#ff4060',borderWidth:2,tension:0.4,pointRadius:0,borderDash:[6,3],fill:false});
   }
 
   last5.forEach((y,i)=>{
-    const ys=sorties.filter(s=>s.annee===parseInt(y)).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
-    let c=0; const pts=ys.map(s=>{c+=+s.dist||0;return Math.round(c*10)/10;});
-    cumulDatasets.push({label:String(y),data:pts,borderColor:anneeColors5[i%anneeColors5.length],borderWidth:y===years[years.length-1]?3:1.5,tension:0.3,pointRadius:0,fill:false});
+    const pts = cumulParJour(y);
+    const isLast = y===years[years.length-1];
+    cumulDatasets.push({label:String(y),data:pts,borderColor:anneeColors5[i%anneeColors5.length],borderWidth:isLast?3:1.5,tension:0.4,pointRadius:0,fill:false});
+  });
+
+  // Labels : jours de l'année → afficher les mois
+  const lblJours = Array.from({length:366},(_,i)=>{
+    const d = new Date(2024, 0, 1+i);
+    return d.getDate()===1 ? ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][d.getMonth()] : '';
   });
 
   if(chartCumulAnnees) chartCumulAnnees.destroy();
   chartCumulAnnees=new Chart(document.getElementById('chartCumulAnnees'),{
     type:'line',
-    data:{labels:Array.from({length:Math.max(...cumulDatasets.map(d=>d.data.length))},(_,i)=>i+1),datasets:cumulDatasets},
+    data:{labels:lblJours,datasets:cumulDatasets},
     options:{
       responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:true,labels:{color:'#8aa0b0',boxWidth:20}},tooltip:{callbacks:{label:i=>i.dataset.label+': '+i.raw+' km'}}},
+      plugins:{
+        legend:{display:true,labels:{color:'#8aa0b0',boxWidth:20}},
+        tooltip:{callbacks:{
+          title:items=>{
+            const idx=items[0].dataIndex;
+            const d=new Date(2024,0,1+idx);
+            return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+          },
+          label:i=>i.dataset.label+': '+i.raw+' km'
+        }}
+      },
       scales:{
-        x:{ticks:{color:'#5a7080',font:{size:10}},grid:{color:'rgba(255,255,255,0.03)'},title:{display:true,text:'Nième sortie de l\'année',color:'#5a7080',font:{size:10}}},
+        x:{ticks:{color:'#5a7080',font:{size:11},maxRotation:0,autoSkip:false,callback:(v,i)=>lblJours[i]},grid:{color:'rgba(255,255,255,0.03)'}},
         y:{ticks:{color:'#5a7080',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}
       }
     }

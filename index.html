@@ -347,6 +347,9 @@ footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;co
   <div style="padding:32px 0 28px;">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;letter-spacing:3px;">COMPARER <span style="color:var(--accent);">LES ANNÉES</span></div>
   </div>
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:14px;">🏅 Bilan général</div>
+  <div class="compare-grid" id="compare-bilan" style="margin-bottom:32px;"></div>
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:14px;">📅 Par année — classées par distance</div>
   <div class="compare-grid" id="compare-grid"></div>
   <div class="charts-row">
     <div class="chart-card full"><div class="chart-label">📊 Distance Route vs Mtb par année</div><canvas id="chartAnnees" height="80"></canvas></div>
@@ -1009,8 +1012,8 @@ function renderCompare(){
   const lblMois=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
   const moisMax=moisDist.indexOf(Math.max(...moisDist));
 
-  // ── Cartes résumé ──
-  document.getElementById('compare-grid').innerHTML = `
+  // ── Cartes résumé bilan ──
+  document.getElementById('compare-bilan').innerHTML = `
     <div class="year-card" style="--yc:#00d4ff">
       <div class="year-num">${bestYear}</div>
       <div class="year-stat"><div class="year-stat-label">🏆 Meilleure année (km)</div><div class="year-stat-val" style="color:#00d4ff">${byYear[bestYear].dist} km</div></div>
@@ -1038,7 +1041,11 @@ function renderCompare(){
       <div class="year-stat"><div class="year-stat-label">Total sorties</div><div class="year-stat-val">${sorties.length}</div></div>
       <div class="year-stat"><div class="year-stat-label">Total dénivelé</div><div class="year-stat-val">${Math.round(sorties.reduce((a,s)=>a+(+s.denivPos||0),0))} m</div></div>
     </div>
-  ` + years.map((y,i)=>`
+  `;
+
+  // ── Cartes années triées par distance décroissante ──
+  const yearsSortedByDist = [...years].sort((a,b)=>byYear[b].dist-byYear[a].dist);
+  document.getElementById('compare-grid').innerHTML = yearsSortedByDist.map((y,i)=>`
     <div class="year-card">
       <div class="year-num">${y}</div>
       <div class="year-stat"><div class="year-stat-label">Distance</div><div class="year-stat-val" style="color:${colors[i%colors.length]}">${byYear[y].dist} km</div></div>

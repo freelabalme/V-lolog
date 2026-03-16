@@ -349,9 +349,11 @@ footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;co
   </div>
   <div class="compare-grid" id="compare-grid"></div>
   <div class="charts-row">
-    <div class="chart-card full"><div class="chart-label">📊 Distance totale par année</div><canvas id="chartAnnees" height="80"></canvas></div>
+    <div class="chart-card full"><div class="chart-label">📊 Distance Route vs Mtb par année</div><canvas id="chartAnnees" height="80"></canvas></div>
     <div class="chart-card"><div class="chart-label">⛰ Dénivelé cumulé par année</div><canvas id="chartDenivAnnees" height="140"></canvas></div>
     <div class="chart-card"><div class="chart-label">🔢 Nombre de sorties par année</div><canvas id="chartNbAnnees" height="140"></canvas></div>
+    <div class="chart-card"><div class="chart-label">📅 Distance par mois — all time</div><canvas id="chartMoisActif" height="140"></canvas></div>
+    <div class="chart-card full"><div class="chart-label">📈 Cumul kilométrique — 5 dernières années + meilleure année 🏆</div><canvas id="chartCumulAnnees" height="80"></canvas></div>
   </div>
 </div>
 </div>
@@ -519,7 +521,7 @@ let currentGPX = null;
 let categorieGPX = 'Route'; // défaut
 let sortField = 'date';
 let sortDir = 1;
-let chartMois, chartCumul, chartDeniv, chartAnnees, chartDenivAnnees, chartNbAnnees;
+let chartMois, chartCumul, chartDeniv, chartAnnees, chartDenivAnnees, chartNbAnnees, chartMoisActif, chartCumulAnnees;
 
 // ══════════════════════════════════════════════════════════
 //  SYNC INDICATOR
@@ -978,7 +980,10 @@ async function deleteSortie(id){
 // ══════════════════════════════════════════════════════════
 function renderCompare(){
   const years=[...new Set(sorties.map(s=>s.annee))].sort((a,b)=>a-b);
-  const colors=['#00d4ff','#ff6b35','#39ff8f','#ffd060','#ff4060','#c084fc'];
+  const colors=['#00d4ff','#ff6b35','#39ff8f','#ffd060','#ff4060','#c084fc','#f472b6','#34d399','#fb923c','#a78bfa','#38bdf8','#4ade80','#facc15','#f87171','#60a5fa','#e879f9'];
+  const isRoute = s=>(s.categorie==='Route')||(!s.categorie&&s.nom&&s.nom.toLowerCase().startsWith('route'));
+  const isVTT   = s=>(s.categorie==='Mtb')||(!s.categorie&&s.nom&&s.nom.toLowerCase().startsWith('mtb'));
+
   const byYear={};
   years.forEach(y=>{
     const ys=sorties.filter(s=>s.annee===y);
@@ -987,74 +992,127 @@ function renderCompare(){
       deniv:Math.round(ys.reduce((a,s)=>a+(+s.denivPos||0),0)),
       nb:ys.length,
       avgDist:ys.length?Math.round(ys.reduce((a,s)=>a+(+s.dist||0),0)/ys.length*10)/10:0,
-      vitMoy:ys.filter(s=>s.vitGlob>0).length?Math.round(ys.filter(s=>s.vitGlob>0).reduce((a,s)=>a+s.vitGlob,0)/ys.filter(s=>s.vitGlob>0).length*10)/10:0
+      vitMoy:ys.filter(s=>s.vitGlob>0).length?Math.round(ys.filter(s=>s.vitGlob>0).reduce((a,s)=>a+s.vitGlob,0)/ys.filter(s=>s.vitGlob>0).length*10)/10:0,
+      distRoute:Math.round(ys.filter(isRoute).reduce((a,s)=>a+(+s.dist||0),0)*10)/10,
+      distMtb:Math.round(ys.filter(isVTT).reduce((a,s)=>a+(+s.dist||0),0)*10)/10,
     };
   });
-  document.getElementById('compare-grid').innerHTML=years.map((y,i)=>`
+
+  // ── Meilleure / pire année ──
+  const bestYear  = years.reduce((a,b)=>byYear[a].dist>byYear[b].dist?a:b, years[0]);
+  const worstYear = years.reduce((a,b)=>byYear[a].dist<byYear[b].dist?a:b, years[0]);
+  const bestDeniv = years.reduce((a,b)=>byYear[a].deniv>byYear[b].deniv?a:b, years[0]);
+
+  // ── Mois le plus actif toutes années ──
+  const moisCount=Array(12).fill(0), moisDist=Array(12).fill(0);
+  sorties.forEach(s=>{if(s.dateDebut){const m=new Date(s.dateDebut).getMonth();moisCount[m]++;moisDist[m]+=(+s.dist||0);}});
+  const lblMois=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  const moisMax=moisDist.indexOf(Math.max(...moisDist));
+
+  // ── Cartes résumé ──
+  document.getElementById('compare-grid').innerHTML = `
+    <div class="year-card" style="--yc:#00d4ff">
+      <div class="year-num">${bestYear}</div>
+      <div class="year-stat"><div class="year-stat-label">🏆 Meilleure année (km)</div><div class="year-stat-val" style="color:#00d4ff">${byYear[bestYear].dist} km</div></div>
+      <div class="year-stat"><div class="year-stat-label">Sorties</div><div class="year-stat-val">${byYear[bestYear].nb}</div></div>
+      <div class="year-stat"><div class="year-stat-label">Dénivelé</div><div class="year-stat-val">${byYear[bestYear].deniv} m</div></div>
+    </div>
+    <div class="year-card" style="--yc:#ff4060">
+      <div class="year-num">${worstYear}</div>
+      <div class="year-stat"><div class="year-stat-label">📉 Année la plus calme</div><div class="year-stat-val" style="color:#ff4060">${byYear[worstYear].dist} km</div></div>
+      <div class="year-stat"><div class="year-stat-label">Sorties</div><div class="year-stat-val">${byYear[worstYear].nb}</div></div>
+    </div>
+    <div class="year-card" style="--yc:#39ff8f">
+      <div class="year-num">${bestDeniv}</div>
+      <div class="year-stat"><div class="year-stat-label">⛰ Plus grand dénivelé</div><div class="year-stat-val" style="color:#39ff8f">${byYear[bestDeniv].deniv} m</div></div>
+      <div class="year-stat"><div class="year-stat-label">Distance</div><div class="year-stat-val">${byYear[bestDeniv].dist} km</div></div>
+    </div>
+    <div class="year-card" style="--yc:#ffd060">
+      <div class="year-num">${lblMois[moisMax]}</div>
+      <div class="year-stat"><div class="year-stat-label">📅 Mois le + actif (all time)</div><div class="year-stat-val" style="color:#ffd060">${Math.round(moisDist[moisMax])} km</div></div>
+      <div class="year-stat"><div class="year-stat-label">Nb sorties ce mois</div><div class="year-stat-val">${moisCount[moisMax]}</div></div>
+    </div>
+    <div class="year-card" style="--yc:#c084fc">
+      <div class="year-num">∑</div>
+      <div class="year-stat"><div class="year-stat-label">🚴 Total all time</div><div class="year-stat-val" style="color:#c084fc">${Math.round(sorties.reduce((a,s)=>a+(+s.dist||0),0))} km</div></div>
+      <div class="year-stat"><div class="year-stat-label">Total sorties</div><div class="year-stat-val">${sorties.length}</div></div>
+      <div class="year-stat"><div class="year-stat-label">Total dénivelé</div><div class="year-stat-val">${Math.round(sorties.reduce((a,s)=>a+(+s.denivPos||0),0))} m</div></div>
+    </div>
+  ` + years.map((y,i)=>`
     <div class="year-card">
       <div class="year-num">${y}</div>
-      <div class="year-stat"><div class="year-stat-label">Distance totale</div><div class="year-stat-val" style="color:${colors[i%colors.length]}">${byYear[y].dist} km</div></div>
-      <div class="year-stat"><div class="year-stat-label">Dénivelé cumulé</div><div class="year-stat-val">${byYear[y].deniv} m</div></div>
-      <div class="year-stat"><div class="year-stat-label">Nb sorties</div><div class="year-stat-val">${byYear[y].nb}</div></div>
-      <div class="year-stat"><div class="year-stat-label">Dist. moy./sortie</div><div class="year-stat-val">${byYear[y].avgDist} km</div></div>
-      <div class="year-stat"><div class="year-stat-label">Vit. moy.</div><div class="year-stat-val">${byYear[y].vitMoy||'—'} km/h</div></div>
-    </div>`).join('')||'<div style="color:var(--muted);padding:20px;">Aucune donnée</div>';
+      <div class="year-stat"><div class="year-stat-label">Distance</div><div class="year-stat-val" style="color:${colors[i%colors.length]}">${byYear[y].dist} km</div></div>
+      <div class="year-stat"><div class="year-stat-label">Dénivelé</div><div class="year-stat-val">${byYear[y].deniv} m</div></div>
+      <div class="year-stat"><div class="year-stat-label">Sorties</div><div class="year-stat-val">${byYear[y].nb}</div></div>
+      <div class="year-stat"><div class="year-stat-label">Route / Mtb</div><div class="year-stat-val">${byYear[y].distRoute} / ${byYear[y].distMtb} km</div></div>
+    </div>`).join('');
 
+  // ── Graphiques ──
   if(chartAnnees) chartAnnees.destroy();
-  chartAnnees=new Chart(document.getElementById('chartAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Distance (km)',data:years.map(y=>byYear[y].dist),backgroundColor:years.map((_,i)=>colors[i%colors.length]+'55'),borderColor:years.map((_,i)=>colors[i%colors.length]),borderWidth:2,borderRadius:8}]},options:chartOpts('km')});
-  if(chartDenivAnnees) chartDenivAnnees.destroy();
-  chartDenivAnnees=new Chart(document.getElementById('chartDenivAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Dénivelé (m)',data:years.map(y=>byYear[y].deniv),backgroundColor:'rgba(255,107,53,0.3)',borderColor:'#ff6b35',borderWidth:2,borderRadius:6}]},options:chartOpts('m')});
-  if(chartNbAnnees) chartNbAnnees.destroy();
-  chartNbAnnees=new Chart(document.getElementById('chartNbAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Sorties',data:years.map(y=>byYear[y].nb),backgroundColor:'rgba(57,255,143,0.25)',borderColor:'#39ff8f',borderWidth:2,borderRadius:6}]},options:chartOpts('sorties')});
-}
-
-// ══════════════════════════════════════════════════════════
-//  EXPORT EXCEL
-// ══════════════════════════════════════════════════════════
-function exportExcel(){
-  if(!sorties.length){toast('Aucune donnée à exporter','error');return;}
-  const wb=XLSX.utils.book_new();
-  const years=[...new Set(sorties.map(s=>s.annee))].sort((a,b)=>b-a);
-  years.forEach(y=>{
-    const ys=sorties.filter(s=>s.annee===y).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
-    const rows=[['Date départ','Nom trace','Distance (km)','Dénivelé positif (m)','Durée','Durée déplacement','Durée pause','Vit.moy.globale','Vit.moy.dépl.','Dist.montée (km)','Durée montée','Vit.montée','Pente moy.(%)','Durée montée (bis)','Cumul VTT (km)']];
-    let cumul=0;
-    ys.forEach(s=>{cumul+=+s.dist||0;rows.push([s.dateDebut?new Date(s.dateDebut).toLocaleDateString('fr-FR'):'',s.nom||'',+s.dist||0,+s.denivPos||0,fmtDur(s.dureeGlob),fmtDur(s.dureeDepl),fmtDur(s.dureePause),+s.vitGlob||0,+s.vitDepl||0,+s.distMontee||0,fmtDur(s.dureeMontee),+s.vitMontee||0,+s.pente||0,fmtDur(s.dureeMontee),Math.round(cumul*100)/100]);});
-    const ws=XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols']=[{wch:22},{wch:35},{wch:13},{wch:16},{wch:12},{wch:16},{wch:12},{wch:16},{wch:16},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14},{wch:13}];
-    XLSX.utils.book_append_sheet(wb,ws,String(y));
+  chartAnnees=new Chart(document.getElementById('chartAnnees'),{
+    type:'bar',
+    data:{labels:years,datasets:[
+      {label:'Route (km)',data:years.map(y=>byYear[y].distRoute),backgroundColor:'rgba(0,212,255,0.5)',borderColor:'#00d4ff',borderWidth:2,borderRadius:4},
+      {label:'Mtb (km)',data:years.map(y=>byYear[y].distMtb),backgroundColor:'rgba(57,255,143,0.5)',borderColor:'#39ff8f',borderWidth:2,borderRadius:4},
+    ]},
+    options:{...chartOpts('km'),plugins:{...chartOpts('km').plugins,legend:{display:true,labels:{color:'#8aa0b0'}}},scales:{...chartOpts('km').scales,x:{...chartOpts('km').scales.x,stacked:true},y:{...chartOpts('km').scales.y,stacked:true}}}
   });
-  const d=new Date();
-  XLSX.writeFile(wb,`Bilan_Velo_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.xlsx`);
-  toast('Export Excel téléchargé ! ✓','success');
-}
 
-// ══════════════════════════════════════════════════════════
-//  AJOUT MANUEL
-// ══════════════════════════════════════════════════════════
-function openManualModal(){document.getElementById('m-date').value=new Date().toISOString().split('T')[0];document.getElementById('modal').classList.add('open');}
-function closeModal(){document.getElementById('modal').classList.remove('open');}
+  if(chartDenivAnnees) chartDenivAnnees.destroy();
+  chartDenivAnnees=new Chart(document.getElementById('chartDenivAnnees'),{
+    type:'bar',
+    data:{labels:years,datasets:[{label:'Dénivelé (m)',data:years.map(y=>byYear[y].deniv),backgroundColor:'rgba(255,107,53,0.3)',borderColor:'#ff6b35',borderWidth:2,borderRadius:6}]},
+    options:chartOpts('m')
+  });
 
-async function saveManual(){
-  const dateStr=document.getElementById('m-date').value;
-  const nom=document.getElementById('m-nom').value.trim();
-  const dist=parseFloat(document.getElementById('m-dist').value)||0;
-  const deniv=parseInt(document.getElementById('m-deniv').value)||0;
-  const dureeGlob=parseHMS(document.getElementById('m-duree').value);
-  const dureeDepl=parseHMS(document.getElementById('m-dureedepl').value);
-  if(!nom||!dist){toast('Nom et distance requis','error');return;}
-  const dateDebut=new Date(dateStr||Date.now());
-  const s={nom,dateDebut:dateDebut.toISOString(),annee:dateDebut.getFullYear(),dist,denivPos:deniv,denivNeg:0,dureeGlob,dureeDepl,dureePause:Math.max(0,dureeGlob-dureeDepl),vitGlob:dureeGlob>0?Math.round(dist/(dureeGlob/3600)*10)/10:0,vitDepl:0,vitMax:0,distMontee:0,dureeMontee:0,vitMontee:0,pente:0,altMin:null,altMax:null};
-  setSyncState('sync');
-  try {
-    const rows=await dbInsert(s);
-    sorties.push(fromRow(rows[0]));
-    sorties.sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
-    setSyncState('ok');
-    closeModal();
-    renderSortiesTable();
-    toast('Sortie ajoutée dans le cloud ☁️✓','success');
-  } catch(e){setSyncState('error');toast('Erreur: '+e.message,'error');}
+  if(chartNbAnnees) chartNbAnnees.destroy();
+  chartNbAnnees=new Chart(document.getElementById('chartNbAnnees'),{
+    type:'bar',
+    data:{labels:years,datasets:[{label:'Sorties',data:years.map(y=>byYear[y].nb),backgroundColor:'rgba(192,132,252,0.3)',borderColor:'#c084fc',borderWidth:2,borderRadius:6}]},
+    options:chartOpts('sorties')
+  });
+
+  // ── Mois le plus actif ──
+  if(chartMoisActif) chartMoisActif.destroy();
+  chartMoisActif=new Chart(document.getElementById('chartMoisActif'),{
+    type:'bar',
+    data:{labels:lblMois,datasets:[
+      {label:'Distance (km)',data:moisDist.map(v=>Math.round(v)),backgroundColor:moisDist.map((_,i)=>i===moisMax?'rgba(255,208,96,0.7)':'rgba(255,208,96,0.2)'),borderColor:'#ffd060',borderWidth:2,borderRadius:6}
+    ]},
+    options:chartOpts('km')
+  });
+
+  // ── Cumul 5 dernières années + meilleure année ──
+  const last5 = years.slice(-5);
+  const cumulDatasets = [];
+  const anneeColors5 = ['#00d4ff','#ff6b35','#39ff8f','#ffd060','#c084fc'];
+
+  // Meilleure année
+  if(!last5.includes(bestYear)) {
+    const ysB = sorties.filter(s=>s.annee===parseInt(bestYear)).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
+    let c=0; const pts=ysB.map(s=>{c+=+s.dist||0;return Math.round(c*10)/10;});
+    cumulDatasets.push({label:`🏆 ${bestYear}`,data:pts,borderColor:'#ff4060',borderWidth:2,tension:0.3,pointRadius:0,borderDash:[6,3],fill:false});
+  }
+
+  last5.forEach((y,i)=>{
+    const ys=sorties.filter(s=>s.annee===parseInt(y)).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
+    let c=0; const pts=ys.map(s=>{c+=+s.dist||0;return Math.round(c*10)/10;});
+    cumulDatasets.push({label:String(y),data:pts,borderColor:anneeColors5[i%anneeColors5.length],borderWidth:y===years[years.length-1]?3:1.5,tension:0.3,pointRadius:0,fill:false});
+  });
+
+  if(chartCumulAnnees) chartCumulAnnees.destroy();
+  chartCumulAnnees=new Chart(document.getElementById('chartCumulAnnees'),{
+    type:'line',
+    data:{labels:Array.from({length:Math.max(...cumulDatasets.map(d=>d.data.length))},(_,i)=>i+1),datasets:cumulDatasets},
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:true,labels:{color:'#8aa0b0',boxWidth:20}},tooltip:{callbacks:{label:i=>i.dataset.label+': '+i.raw+' km'}}},
+      scales:{
+        x:{ticks:{color:'#5a7080',font:{size:10}},grid:{color:'rgba(255,255,255,0.03)'},title:{display:true,text:'Nième sortie de l\'année',color:'#5a7080',font:{size:10}}},
+        y:{ticks:{color:'#5a7080',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════════

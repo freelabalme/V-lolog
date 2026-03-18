@@ -28,7 +28,6 @@
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(0,212,255,0.04) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(255,107,53,0.03) 0%,transparent 50%);pointer-events:none;z-index:0;}
-
 nav{position:sticky;top:0;z-index:100;background:rgba(8,12,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px;}
 .nav-brand{display:flex;align-items:center;gap:12px;font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;}
 .nav-brand span{color:var(--accent);}
@@ -42,11 +41,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,12,16,0.95);backdrop-fil
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--accent3);}
 .sync-dot.syncing{background:var(--yellow);animation:pulse 1s infinite;}
 .sync-dot.error{background:var(--danger);}
-
 .page{display:none;position:relative;z-index:1;}
 .page.active{display:block;}
 .container{max-width:1200px;margin:0 auto;padding:32px 24px;}
-
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:9px;font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;}
 .btn-primary{background:var(--accent);color:#080c10;}
 .btn-primary:hover{background:#00bce8;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,0.25);}
@@ -60,12 +57,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,12,16,0.95);backdrop-fil
 .btn-green:hover{background:#2de87a;transform:translateY(-1px);}
 .btn-orange{background:var(--accent2);color:white;}
 .btn-orange:hover{background:#e55a28;}
-
 .dash-hero{padding:40px 0 32px;border-bottom:1px solid var(--border);margin-bottom:32px;}
 .dash-title{font-family:'Barlow Condensed',sans-serif;font-size:3rem;font-weight:900;letter-spacing:3px;line-height:1;margin-bottom:6px;}
 .dash-title span{color:var(--accent);}
 .dash-sub{color:var(--muted2);font-size:0.9rem;}
-
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:32px;}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s;}
 .kpi:hover{border-color:var(--border2);transform:translateY(-2px);}
@@ -83,16 +78,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,12,16,0.95);backdrop-fil
 .kpi.c2 .kpi-val{color:var(--accent2);}
 .kpi.c3 .kpi-val{color:var(--accent3);}
 .kpi.c4 .kpi-val{color:var(--yellow);}
-
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 20px 16px;}
 .chart-card.full{grid-column:1/-1;}
 .chart-label{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;}
-
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
 .sec-title{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;letter-spacing:2px;}
 .sec-badge{background:rgba(0,212,255,0.1);color:var(--accent);border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:600;margin-left:10px;}
-
 .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:32px;}
 .table-search{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .search-input{flex:1;min-width:200px;padding:9px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.85rem;}
@@ -112,7 +104,6 @@ tbody td.date-col{color:var(--muted2);font-size:0.8rem;}
 tbody td.name-col{font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;}
 .empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
 .empty-icon{font-size:3rem;margin-bottom:12px;opacity:0.4;}
-
 .import-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px;}
 .import-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;}
 .import-card h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:20px;}
@@ -129,7 +120,6 @@ tbody td.name-col{font-weight:500;max-width:200px;overflow:hidden;text-overflow:
 .result-item{background:var(--card);border-radius:8px;padding:10px 14px;}
 .result-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
 .result-val{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;color:var(--accent);font-weight:700;}
-
 .compare-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:28px;}
 .year-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;}
 .year-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;}
@@ -141,7 +131,6 @@ tbody td.name-col{font-weight:500;max-width:200px;overflow:hidden;text-overflow:
 .year-stat{margin-bottom:8px;}
 .year-stat-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
 .year-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;}
-
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:28px;width:90%;max-width:480px;position:relative;max-height:90vh;overflow-y:auto;}
@@ -152,7 +141,6 @@ tbody td.name-col{font-weight:500;max-width:200px;overflow:hidden;text-overflow:
 .form-input:focus{outline:none;border-color:var(--accent);}
 .modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
-
 .toast{position:fixed;bottom:28px;right:28px;z-index:300;background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:12px;font-size:0.88rem;min-width:260px;transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast.success{border-left:3px solid var(--accent3);}
@@ -170,14 +158,13 @@ tbody td.name-col{font-weight:500;max-width:200px;overflow:hidden;text-overflow:
 .detail-stat:last-child{border-bottom:none;}
 .detail-stat-label{font-size:0.78rem;color:var(--muted2);}
 .detail-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text);}
-
 .spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;margin:0 auto 12px;animation:spin 0.7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-
 .divider{height:1px;background:var(--border);margin:28px 0;}
 footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;color:var(--muted);font-size:0.75rem;position:relative;z-index:1;}
-
+/* Renommage inline */
+.rename-input{background:var(--surface);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.85rem;padding:4px 8px;width:180px;}
 @media(max-width:768px){
   .charts-row{grid-template-columns:1fr;}
   .import-layout{grid-template-columns:1fr;}
@@ -361,7 +348,7 @@ footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;co
 </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL AJOUT MANUEL -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
@@ -381,7 +368,24 @@ footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;co
   </div>
 </div>
 
+<!-- MODAL RENOMMAGE -->
+<div class="modal-overlay" id="modal-rename">
+  <div class="modal">
+    <button class="modal-close" onclick="closeRenameModal()">✕</button>
+    <h3>✏️ RENOMMER LA SORTIE</h3>
+    <div class="form-row">
+      <label class="form-label">Nouveau nom</label>
+      <input class="form-input" type="text" id="rename-input" placeholder="Nom de la trace…">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeRenameModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveRename()">✓ Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><span class="toast-icon"></span><span id="toast-msg"></span></div>
+
 <!-- DETAIL -->
 <div class="page" id="page-detail">
 <div class="container">
@@ -392,12 +396,9 @@ footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;co
       <div style="color:var(--muted2);font-size:0.85rem;margin-top:2px;" id="detail-date"></div>
     </div>
     <div id="detail-cat-badge" style="margin-left:auto;"></div>
+    <button class="btn btn-secondary" onclick="openRenameModal(currentDetailId)" style="margin-left:8px;">✏️ Renommer</button>
   </div>
-
-  <!-- KPI vignettes -->
   <div class="kpi-grid" id="detail-kpis"></div>
-
-  <!-- Infos secondaires -->
   <div class="charts-row" style="grid-template-columns:1fr 1fr 1fr;">
     <div class="chart-card">
       <div class="chart-label">⏱ Durées</div>
@@ -423,7 +424,6 @@ footer{border-top:1px solid var(--border);padding:20px 32px;text-align:center;co
 // ══════════════════════════════════════════════════════════
 const SUPA_URL = 'https://lxanrdnrzdgsulpmbfyc.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4YW5yZG5yemRnc3VscG1iZnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMTE3NjMsImV4cCI6MjA4ODY4Nzc2M30.2J8d2mZOjJ66vnK_ZVwgu9wnok9tr4pD8OAMC7YLn10';
-
 const headers = {
   'Content-Type': 'application/json',
   'apikey': SUPA_KEY,
@@ -431,10 +431,24 @@ const headers = {
   'Prefer': 'return=representation'
 };
 
+// ══════════════════════════════════════════════════════════
+//  CORRECTION 1 : pagination Supabase (plus de limite 1000)
+// ══════════════════════════════════════════════════════════
 async function dbGet() {
-  const r = await fetch(`${SUPA_URL}/rest/v1/sorties?order=date_depart.desc`, { headers });
-  if(!r.ok) throw new Error('Erreur chargement');
-  return await r.json();
+  let all = [], offset = 0;
+  const limit = 1000;
+  while(true) {
+    const r = await fetch(
+      `${SUPA_URL}/rest/v1/sorties?order=date_depart.desc&limit=${limit}&offset=${offset}`,
+      { headers }
+    );
+    if(!r.ok) throw new Error('Erreur chargement');
+    const batch = await r.json();
+    all = all.concat(batch);
+    if(batch.length < limit) break;
+    offset += limit;
+  }
+  return all;
 }
 
 async function dbInsert(s) {
@@ -451,6 +465,60 @@ async function dbDelete(id) {
     method:'DELETE', headers
   });
   if(!r.ok) throw new Error('Erreur suppression');
+}
+
+// ══════════════════════════════════════════════════════════
+//  CORRECTION 2 : renommage via PATCH Supabase
+// ══════════════════════════════════════════════════════════
+async function dbRename(id, newNom) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/sorties?id=eq.${id}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ nom: newNom })
+  });
+  if(!r.ok) throw new Error('Erreur renommage');
+}
+
+let currentDetailId = null;
+let renameTargetId = null;
+
+function openRenameModal(id) {
+  const s = sorties.find(x => x.id === id);
+  if(!s) return;
+  renameTargetId = id;
+  document.getElementById('rename-input').value = s.nom || '';
+  document.getElementById('modal-rename').classList.add('open');
+  setTimeout(() => document.getElementById('rename-input').focus(), 100);
+}
+
+function closeRenameModal() {
+  document.getElementById('modal-rename').classList.remove('open');
+  renameTargetId = null;
+}
+
+async function saveRename() {
+  const newNom = document.getElementById('rename-input').value.trim();
+  if(!newNom) { toast('Le nom ne peut pas être vide', 'error'); return; }
+  if(!renameTargetId) return;
+  setSyncState('sync');
+  try {
+    await dbRename(renameTargetId, newNom);
+    // Mettre à jour localement
+    const s = sorties.find(x => x.id === renameTargetId);
+    if(s) s.nom = newNom;
+    setSyncState('ok');
+    closeRenameModal();
+    toast('Sortie renommée ✓', 'success');
+    // Rafraîchir l'affichage selon la page active
+    if(document.getElementById('page-detail').classList.contains('active')) {
+      showDetail(renameTargetId);
+    } else {
+      renderSortiesTable();
+    }
+  } catch(e) {
+    setSyncState('error');
+    toast('Erreur renommage : ' + e.message, 'error');
+  }
 }
 
 function toRow(s) {
@@ -521,7 +589,7 @@ function fromRow(r) {
 // ══════════════════════════════════════════════════════════
 let sorties = [];
 let currentGPX = null;
-let categorieGPX = 'Route'; // défaut
+let categorieGPX = 'Route';
 let sortField = 'date';
 let sortDir = 1;
 let chartMois, chartCumul, chartDeniv, chartAnnees, chartDenivAnnees, chartNbAnnees, chartMoisActif, chartCumulAnnees;
@@ -535,9 +603,9 @@ function setSyncState(state) {
   const lbl = document.getElementById('sync-label');
   const txt = document.getElementById('sync-status-text');
   const states = {
-    ok:    { cls:'',        lbl:'Connecté',      txt:'✅ Connecté à Supabase — données synchronisées' },
-    sync:  { cls:'syncing', lbl:'Sync…',         txt:'🔄 Synchronisation en cours…' },
-    error: { cls:'error',   lbl:'Hors ligne',    txt:'❌ Erreur de connexion — vérifiez votre réseau' }
+    ok:    { cls:'',        lbl:'Connecté',   txt:'✅ Connecté à Supabase — données synchronisées' },
+    sync:  { cls:'syncing', lbl:'Sync…',      txt:'🔄 Synchronisation en cours…' },
+    error: { cls:'error',   lbl:'Hors ligne', txt:'❌ Erreur de connexion — vérifiez votre réseau' }
   };
   const s = states[state]||states.ok;
   [dot1,dot2].forEach(d=>{ if(d){d.className='sync-dot '+(s.cls||'');} });
@@ -591,62 +659,44 @@ async function handleMultiGPX(files) {
   if(!files||!files.length) return;
   const arr = Array.from(files).filter(f=>f.name.toLowerCase().endsWith('.gpx'));
   if(!arr.length){ toast('Aucun fichier GPX sélectionné','error'); return; }
-
   arr.sort((a,b)=>a.name.localeCompare(b.name));
-
   const loadingEl = document.getElementById('import-loading');
   const loadingTxt = loadingEl.querySelector('div');
   loadingEl.style.display='block';
   document.getElementById('result-card').classList.remove('show');
-
   let ok=0, erreurs=0, doublons=0;
   setSyncState('sync');
-
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-
   for(let i=0; i<arr.length; i++) {
     const file = arr[i];
     loadingTxt.textContent = `${i+1} / ${arr.length} — ${file.name.substring(0,30)}`;
     try {
-      // Lecture du fichier
       const xml = await readFileAsText(file);
       if(!xml || xml.length < 50){ erreurs++; continue; }
-
-      // Parsing
       let gpx;
       try { gpx = parseGPX(xml, file.name); } catch(e){ erreurs++; continue; }
       if(!gpx){ erreurs++; continue; }
-
-      // Anti-doublon
       const dateG = gpx.dateDebut ? new Date(gpx.dateDebut).toLocaleDateString('fr-FR') : '';
       const exists = sorties.some(s => {
         const dateS = s.dateDebut ? new Date(s.dateDebut).toLocaleDateString('fr-FR') : '';
         return dateS===dateG && Math.abs((+s.dist||0)-(+gpx.dist||0))<0.5;
       });
       if(exists){ doublons++; continue; }
-
-      // Catégorie auto
       const nom = (gpx.nom||'').toLowerCase();
       gpx.categorie = nom.startsWith('mtb') ? 'Mtb' : nom.startsWith('route') ? 'Route' : 'Autre';
-
-      // Pause toutes les 5 insertions pour ne pas surcharger Supabase
       if(ok>0 && ok%5===0) await sleep(300);
-
       const rows = await dbInsert(gpx);
       if(rows && rows[0]) sorties.push(fromRow(rows[0]));
       ok++;
-
     } catch(e) {
       console.error('Erreur fichier:', file.name, e);
       erreurs++;
     }
   }
-
   sorties.sort((a,b)=>new Date(b.dateDebut)-new Date(a.dateDebut));
   setSyncState('ok');
   loadingEl.style.display='none';
   document.getElementById('gpx-multi-input').value='';
-
   const type = erreurs>0 ? 'error' : 'success';
   toast(`✓ ${ok} importée(s) · ${doublons} doublon(s) · ${erreurs} erreur(s)`, type);
   if(ok>0) showPage('dashboard');
@@ -705,15 +755,12 @@ function parseGPX(xml, filename) {
     temps.push(tp!==null?parseFloat(tp):null);
   }
   if(!lats.length) throw new Error('Aucun point trouvé');
-
   const hasTime=times.some(t=>t!==null), hasEle=eles.some(e=>e!==null);
   let distTot=0,distMontee=0,dureeMontee=0,denivPos=0,denivNeg=0,dureeGlob=0,dureeDepl=0,vitMax=0;
   const tValid=times.filter(t=>t);
   const dateDebut=hasTime?tValid[0]:null;
   const dateFin=hasTime?tValid[tValid.length-1]:null;
   if(hasTime) dureeGlob=(dateFin-dateDebut)/1000;
-
-  // Lissage altitude : moyenne glissante 5 pts → élimine bruit GPS
   const elesL = eles.map((e,i) => {
     if(e===null) return null;
     let s=0, c=0;
@@ -722,24 +769,21 @@ function parseGPX(xml, filename) {
     }
     return c>0 ? s/c : e;
   });
-
   for(let i=1;i<lats.length;i++) {
     const d=haversine(lats[i-1],lons[i-1],lats[i],lons[i]);
     if(hasTime&&times[i]&&times[i-1]) {
       const dt=(times[i]-times[i-1])/1000;
       if(dt>0){
         const v=d/dt*3600;
-        // Ignore segments aberrants GPS (> 75 km/h)
         if(v<75){
           distTot+=d;
-          // Seuil déplacement 3 km/h (proche Strava)
           if(v>3) dureeDepl+=dt;
           if(v>vitMax) vitMax=v;
         }
       }
     } else { distTot+=d; }
     if(hasEle&&elesL[i]!==null&&elesL[i-1]!==null) {
-      const dh=elesL[i]-elesL[i-1];  // altitude lissée
+      const dh=elesL[i]-elesL[i-1];
       if(dh>0){
         denivPos+=dh;
         const penteSegment = d>0 ? (dh/(d*1000))*100 : 0;
@@ -747,7 +791,6 @@ function parseGPX(xml, filename) {
       } else if(dh<0) denivNeg+=Math.abs(dh);
     }
   }
-  // Moyennes puissance, cadence, température
   const avgOf = arr => { const v=arr.filter(x=>x!==null&&x>0); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null; };
   const maxOf = arr => { const v=arr.filter(x=>x!==null&&x>0); return v.length?Math.max(...v):null; };
   const puissanceMoy = avgOf(powers);
@@ -757,7 +800,6 @@ function parseGPX(xml, filename) {
   const tempMoy      = avgOf(temps);
   const tempMin      = temps.filter(x=>x!==null).length ? Math.min(...temps.filter(x=>x!==null)) : null;
   const tempMax      = temps.filter(x=>x!==null).length ? Math.max(...temps.filter(x=>x!==null)) : null;
-
   const dureePause=Math.max(0,dureeGlob-dureeDepl);
   const vitGlob=dureeGlob>0?distTot/(dureeGlob/3600):0;
   const vitDepl=dureeDepl>0?distTot/(dureeDepl/3600):0;
@@ -765,7 +807,6 @@ function parseGPX(xml, filename) {
   const pente=distMontee>0?(denivPos/(distMontee*1000))*100:0;
   const altMin=hasEle?Math.min(...eles.filter(e=>e!==null)):null;
   const altMax=hasEle?Math.max(...eles.filter(e=>e!==null)):null;
-
   return {
     nom, dateDebut: dateDebut?dateDebut.toISOString():null, dateFin:dateFin?dateFin.toISOString():null,
     dist:Math.round(distTot*100)/100, denivPos:Math.round(denivPos), denivNeg:Math.round(denivNeg),
@@ -809,7 +850,6 @@ function renderResult(g) {
   document.getElementById('result-grid').innerHTML = items.map(([l,v])=>`
     <div class="result-item"><div class="result-label">${l}</div><div class="result-val">${v||'—'}</div></div>`).join('');
   document.getElementById('result-card').classList.add('show');
-  // Pré-sélectionner selon le nom
   const nom = (g.nom||'').toLowerCase();
   if(nom.startsWith('mtb')) setCategorie('Mtb');
   else if(nom.startsWith('route')) setCategorie('Route');
@@ -849,41 +889,31 @@ function resetImport() {
 function renderDashboard() {
   document.getElementById('loading-dash').style.display='none';
   document.getElementById('dash-content').style.display='block';
-
   const annee=new Date().getFullYear();
   const thisYear=sorties.filter(s=>s.annee===annee);
   document.getElementById('dash-sub').textContent=
     `${sorties.length} sortie${sorties.length>1?'s':''} · Année ${annee} : ${thisYear.length} sortie${thisYear.length>1?'s':''}`;
-
   const sumDist=arr=>arr.reduce((a,s)=>a+(+s.dist||0),0);
   const sumDeniv=arr=>arr.reduce((a,s)=>a+(+s.denivPos||0),0);
-  const avgVit=arr=>{const v=arr.filter(s=>s.vitGlob>0);return v.length?v.reduce((a,s)=>a+s.vitGlob,0)/v.length:0;};
-
-  // Détection par catégorie (champ dédié) avec fallback sur le nom
   const isRoute = s => (s.categorie==='Route') || (!s.categorie && s.nom && s.nom.toLowerCase().startsWith('route'));
   const isVTT   = s => (s.categorie==='Mtb')   || (!s.categorie && s.nom && s.nom.toLowerCase().startsWith('mtb'));
   const route = thisYear.filter(isRoute);
   const vtt   = thisYear.filter(isVTT);
   const avgVitRoute = arr => { const v=arr.filter(s=>s.vitGlob>0); return v.length?v.reduce((a,s)=>a+s.vitGlob,0)/v.length:0; };
-
-  // Sortie la plus longue (toutes années)
   const sortieMax = sorties.reduce((a,s)=>(+s.dist||0)>(+a.dist||0)?s:a, sorties[0]||{});
   const distMax = sortieMax ? (+sortieMax.dist||0).toFixed(1) : '—';
   const distMaxUnit = sortieMax && sortieMax.nom
     ? sortieMax.nom.substring(0,25)+(sortieMax.nom.length>25?'…':'') + ' · ' + fmtDate(sortieMax.dateDebut)
     : 'km en une sortie';
-
   const kpis=[
     {c:'c1',icon:'📏',label:'Distance '+annee,val:sumDist(thisYear).toFixed(0),unit:'km parcourus'},
     {c:'c2',icon:'⛰',label:'Dénivelé '+annee,val:sumDeniv(thisYear).toFixed(0),unit:'mètres de D+'},
     {c:'c3',icon:'🚴',label:'Sorties '+annee,val:thisYear.length,unit:'sorties enregistrées'},
     {c:'c4',icon:'🚴 Route',label:'Vit. moy. Route '+annee,val:avgVitRoute(route).toFixed(1),unit:'km/h · '+route.length+' sortie'+(route.length>1?'s':'')},
     {c:'c4',icon:'🚵 VTT',label:'Vit. moy. VTT '+annee,val:avgVitRoute(vtt).toFixed(1),unit:'km/h · '+vtt.length+' sortie'+(vtt.length>1?'s':'')},
-    // Distances Route vs VTT année en cours
     {c:'c1',icon:'🚴',label:'Route vs VTT — '+annee,
       val:sumDist(route).toFixed(0)+' / '+sumDist(vtt).toFixed(0),
       unit:'km Route / Mtb · '+(sumDist(thisYear)>0?(sumDist(route)/sumDist(thisYear)*100).toFixed(0)+'% Route — '+(sumDist(vtt)/sumDist(thisYear)*100).toFixed(0)+'% Mtb':'—')},
-    // Distances Route vs VTT toutes années
     {c:'c2',icon:'🏅',label:'Route vs VTT — Total',
       val:sumDist(sorties.filter(isRoute)).toFixed(0)+' / '+sumDist(sorties.filter(isVTT)).toFixed(0),
       unit:'km Route / Mtb · '+(sumDist(sorties)>0?(sumDist(sorties.filter(isRoute))/sumDist(sorties)*100).toFixed(0)+'% Route — '+(sumDist(sorties.filter(isVTT))/sumDist(sorties)*100).toFixed(0)+'% Mtb':'—')},
@@ -894,23 +924,18 @@ function renderDashboard() {
   ];
   document.getElementById('kpi-grid').innerHTML=kpis.map(k=>`
     <div class="kpi ${k.c}"><div class="kpi-icon">${k.icon}</div><div class="kpi-label">${k.label}</div><div class="kpi-val">${k.val}</div><div class="kpi-unit">${k.unit}</div></div>`).join('');
-
   const mois=Array(12).fill(0), moisD=Array(12).fill(0);
   thisYear.forEach(s=>{if(s.dateDebut){const m=new Date(s.dateDebut).getMonth();mois[m]+=(+s.dist||0);moisD[m]+=(+s.denivPos||0);}});
   const lblMois=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-
   if(chartMois) chartMois.destroy();
   chartMois=new Chart(document.getElementById('chartMois'),{type:'bar',data:{labels:lblMois,datasets:[{label:'Distance (km)',data:mois,backgroundColor:'rgba(0,212,255,0.25)',borderColor:'#00d4ff',borderWidth:2,borderRadius:6}]},options:chartOpts('km')});
-
   const sorted=[...thisYear].sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
   let cumul=0;
   const cumulData=sorted.map(s=>{cumul+=+s.dist||0;return{x:new Date(s.dateDebut).toLocaleDateString('fr-FR',{month:'short',day:'numeric'}),y:Math.round(cumul*10)/10};});
   if(chartCumul) chartCumul.destroy();
   chartCumul=new Chart(document.getElementById('chartCumul'),{type:'line',data:{labels:cumulData.map(d=>d.x),datasets:[{label:'Cumul km',data:cumulData.map(d=>d.y),borderColor:'#39ff8f',backgroundColor:'rgba(57,255,143,0.08)',fill:true,tension:0.3,pointRadius:2,borderWidth:2}]},options:chartOpts('km')});
-
   if(chartDeniv) chartDeniv.destroy();
   chartDeniv=new Chart(document.getElementById('chartDeniv'),{type:'bar',data:{labels:lblMois,datasets:[{label:'Dénivelé (m)',data:moisD,backgroundColor:'rgba(255,107,53,0.3)',borderColor:'#ff6b35',borderWidth:2,borderRadius:6}]},options:chartOpts('m')});
-
   const recent=[...sorties].sort((a,b)=>new Date(b.dateDebut)-new Date(a.dateDebut)).slice(0,8);
   document.getElementById('badge-recent').textContent=recent.length;
   document.getElementById('tbody-recent').innerHTML=recent.length?recent.map(s=>`
@@ -961,7 +986,10 @@ function renderSortiesTable(){
       <td class="num">${s.distMontee||'—'}</td>
       <td class="num">${s.pente?s.pente+'%':'—'}</td>
       <td class="num" style="color:var(--accent)">${Math.round(cumul*100)/100}</td>
-      <td><button class="btn btn-danger" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteSortie(${s.id})">✕</button></td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-secondary" style="padding:4px 8px;font-size:0.72rem;" onclick="openRenameModal(${s.id})">✏️</button>
+        <button class="btn btn-danger" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteSortie(${s.id})">✕</button>
+      </td>
     </tr>`;
   }).join(''):`<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">🚴</div><div>Aucune sortie trouvée</div></div></td></tr>`;
 }
@@ -979,6 +1007,42 @@ async function deleteSortie(id){
 }
 
 // ══════════════════════════════════════════════════════════
+//  MODAL AJOUT MANUEL
+// ══════════════════════════════════════════════════════════
+function openManualModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+async function saveManual() {
+  const dateVal = document.getElementById('m-date').value;
+  const nom     = document.getElementById('m-nom').value.trim();
+  const dist    = parseFloat(document.getElementById('m-dist').value)||0;
+  const deniv   = parseInt(document.getElementById('m-deniv').value)||0;
+  const dureeG  = parseHMS(document.getElementById('m-duree').value);
+  const dureeD  = parseHMS(document.getElementById('m-dureedepl').value);
+  if(!dateVal||!nom){ toast('Date et nom requis','error'); return; }
+  const dateDebut = new Date(dateVal+'T08:00:00').toISOString();
+  const annee = new Date(dateVal).getFullYear();
+  const vitGlob = dureeG>0 ? Math.round(dist/(dureeG/3600)*10)/10 : 0;
+  const vitDepl = dureeD>0 ? Math.round(dist/(dureeD/3600)*10)/10 : 0;
+  const s = {
+    nom, dateDebut, annee, dist, denivPos:deniv, denivNeg:0,
+    dureeGlob:dureeG, dureeDepl:dureeD, dureePause:Math.max(0,dureeG-dureeD),
+    vitGlob, vitDepl, vitMax:0, distMontee:0, dureeMontee:0, vitMontee:0, pente:0,
+    altMin:null, altMax:null, categorie:'Autre'
+  };
+  setSyncState('sync');
+  try {
+    const rows = await dbInsert(s);
+    sorties.push(fromRow(rows[0]));
+    sorties.sort((a,b)=>new Date(b.dateDebut)-new Date(a.dateDebut));
+    setSyncState('ok');
+    closeModal();
+    toast('Sortie ajoutée ☁️✓','success');
+    renderDashboard();
+  } catch(e) { setSyncState('error'); toast('Erreur : '+e.message,'error'); }
+}
+
+// ══════════════════════════════════════════════════════════
 //  COMPARE
 // ══════════════════════════════════════════════════════════
 function renderCompare(){
@@ -986,7 +1050,6 @@ function renderCompare(){
   const colors=['#00d4ff','#ff6b35','#39ff8f','#ffd060','#ff4060','#c084fc','#f472b6','#34d399','#fb923c','#a78bfa','#38bdf8','#4ade80','#facc15','#f87171','#60a5fa','#e879f9'];
   const isRoute = s=>(s.categorie==='Route')||(!s.categorie&&s.nom&&s.nom.toLowerCase().startsWith('route'));
   const isVTT   = s=>(s.categorie==='Mtb')||(!s.categorie&&s.nom&&s.nom.toLowerCase().startsWith('mtb'));
-
   const byYear={};
   years.forEach(y=>{
     const ys=sorties.filter(s=>s.annee===y);
@@ -1000,101 +1063,54 @@ function renderCompare(){
       distMtb:Math.round(ys.filter(isVTT).reduce((a,s)=>a+(+s.dist||0),0)*10)/10,
     };
   });
-
-  // ── Meilleure / pire année ──
   const bestYear  = years.reduce((a,b)=>byYear[a].dist>byYear[b].dist?a:b, years[0]);
   const worstYear = years.reduce((a,b)=>byYear[a].dist<byYear[b].dist?a:b, years[0]);
   const bestDeniv = years.reduce((a,b)=>byYear[a].deniv>byYear[b].deniv?a:b, years[0]);
-
-  // ── Mois le plus actif toutes années ──
   const moisCount=Array(12).fill(0), moisDist=Array(12).fill(0);
   sorties.forEach(s=>{if(s.dateDebut){const m=new Date(s.dateDebut).getMonth();moisCount[m]++;moisDist[m]+=(+s.dist||0);}});
   const lblMois=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
   const moisMax=moisDist.indexOf(Math.max(...moisDist));
-
-  // ── Cartes résumé bilan ──
   document.getElementById('compare-bilan').innerHTML = `
-    <div class="year-card" style="--yc:#00d4ff">
-      <div class="year-num">${bestYear}</div>
+    <div class="year-card"><div class="year-num">${bestYear}</div>
       <div class="year-stat"><div class="year-stat-label">🏆 Meilleure année (km)</div><div class="year-stat-val" style="color:#00d4ff">${byYear[bestYear].dist} km</div></div>
       <div class="year-stat"><div class="year-stat-label">Sorties</div><div class="year-stat-val">${byYear[bestYear].nb}</div></div>
-      <div class="year-stat"><div class="year-stat-label">Dénivelé</div><div class="year-stat-val">${byYear[bestYear].deniv} m</div></div>
-    </div>
-    <div class="year-card" style="--yc:#ff4060">
-      <div class="year-num">${worstYear}</div>
+      <div class="year-stat"><div class="year-stat-label">Dénivelé</div><div class="year-stat-val">${byYear[bestYear].deniv} m</div></div></div>
+    <div class="year-card"><div class="year-num">${worstYear}</div>
       <div class="year-stat"><div class="year-stat-label">📉 Année la plus calme</div><div class="year-stat-val" style="color:#ff4060">${byYear[worstYear].dist} km</div></div>
-      <div class="year-stat"><div class="year-stat-label">Sorties</div><div class="year-stat-val">${byYear[worstYear].nb}</div></div>
-    </div>
-    <div class="year-card" style="--yc:#39ff8f">
-      <div class="year-num">${bestDeniv}</div>
+      <div class="year-stat"><div class="year-stat-label">Sorties</div><div class="year-stat-val">${byYear[worstYear].nb}</div></div></div>
+    <div class="year-card"><div class="year-num">${bestDeniv}</div>
       <div class="year-stat"><div class="year-stat-label">⛰ Plus grand dénivelé</div><div class="year-stat-val" style="color:#39ff8f">${byYear[bestDeniv].deniv} m</div></div>
-      <div class="year-stat"><div class="year-stat-label">Distance</div><div class="year-stat-val">${byYear[bestDeniv].dist} km</div></div>
-    </div>
-    <div class="year-card" style="--yc:#ffd060">
-      <div class="year-num">${lblMois[moisMax]}</div>
+      <div class="year-stat"><div class="year-stat-label">Distance</div><div class="year-stat-val">${byYear[bestDeniv].dist} km</div></div></div>
+    <div class="year-card"><div class="year-num">${lblMois[moisMax]}</div>
       <div class="year-stat"><div class="year-stat-label">📅 Mois le + actif (all time)</div><div class="year-stat-val" style="color:#ffd060">${Math.round(moisDist[moisMax])} km</div></div>
-      <div class="year-stat"><div class="year-stat-label">Nb sorties ce mois</div><div class="year-stat-val">${moisCount[moisMax]}</div></div>
-    </div>
-    <div class="year-card" style="--yc:#c084fc">
-      <div class="year-num">∑</div>
+      <div class="year-stat"><div class="year-stat-label">Nb sorties ce mois</div><div class="year-stat-val">${moisCount[moisMax]}</div></div></div>
+    <div class="year-card"><div class="year-num">∑</div>
       <div class="year-stat"><div class="year-stat-label">🚴 Total all time</div><div class="year-stat-val" style="color:#c084fc">${Math.round(sorties.reduce((a,s)=>a+(+s.dist||0),0))} km</div></div>
       <div class="year-stat"><div class="year-stat-label">Total sorties</div><div class="year-stat-val">${sorties.length}</div></div>
-      <div class="year-stat"><div class="year-stat-label">Total dénivelé</div><div class="year-stat-val">${Math.round(sorties.reduce((a,s)=>a+(+s.denivPos||0),0))} m</div></div>
-    </div>
-  `;
-
-  // ── Cartes années triées par distance décroissante ──
+      <div class="year-stat"><div class="year-stat-label">Total dénivelé</div><div class="year-stat-val">${Math.round(sorties.reduce((a,s)=>a+(+s.denivPos||0),0))} m</div></div></div>`;
   const yearsSortedByDist = [...years].sort((a,b)=>byYear[b].dist-byYear[a].dist);
   document.getElementById('compare-grid').innerHTML = yearsSortedByDist.map((y,i)=>`
-    <div class="year-card">
-      <div class="year-num">${y}</div>
+    <div class="year-card"><div class="year-num">${y}</div>
       <div class="year-stat"><div class="year-stat-label">Distance</div><div class="year-stat-val" style="color:${colors[i%colors.length]}">${byYear[y].dist} km</div></div>
       <div class="year-stat"><div class="year-stat-label">Dénivelé</div><div class="year-stat-val">${byYear[y].deniv} m</div></div>
       <div class="year-stat"><div class="year-stat-label">Sorties</div><div class="year-stat-val">${byYear[y].nb}</div></div>
-      <div class="year-stat"><div class="year-stat-label">Route / Mtb</div><div class="year-stat-val">${byYear[y].distRoute} / ${byYear[y].distMtb} km</div></div>
-    </div>`).join('');
-
-  // ── Graphiques ──
+      <div class="year-stat"><div class="year-stat-label">Route / Mtb</div><div class="year-stat-val">${byYear[y].distRoute} / ${byYear[y].distMtb} km</div></div></div>`).join('');
   if(chartAnnees) chartAnnees.destroy();
-  chartAnnees=new Chart(document.getElementById('chartAnnees'),{
-    type:'bar',
-    data:{labels:years,datasets:[
-      {label:'Route (km)',data:years.map(y=>byYear[y].distRoute),backgroundColor:'rgba(0,212,255,0.5)',borderColor:'#00d4ff',borderWidth:2,borderRadius:4},
-      {label:'Mtb (km)',data:years.map(y=>byYear[y].distMtb),backgroundColor:'rgba(57,255,143,0.5)',borderColor:'#39ff8f',borderWidth:2,borderRadius:4},
-    ]},
-    options:{...chartOpts('km'),plugins:{...chartOpts('km').plugins,legend:{display:true,labels:{color:'#8aa0b0'}}},scales:{...chartOpts('km').scales,x:{...chartOpts('km').scales.x,stacked:true},y:{...chartOpts('km').scales.y,stacked:true}}}
-  });
-
+  chartAnnees=new Chart(document.getElementById('chartAnnees'),{type:'bar',data:{labels:years,datasets:[
+    {label:'Route (km)',data:years.map(y=>byYear[y].distRoute),backgroundColor:'rgba(0,212,255,0.5)',borderColor:'#00d4ff',borderWidth:2,borderRadius:4},
+    {label:'Mtb (km)',data:years.map(y=>byYear[y].distMtb),backgroundColor:'rgba(57,255,143,0.5)',borderColor:'#39ff8f',borderWidth:2,borderRadius:4},
+  ]},options:{...chartOpts('km'),plugins:{...chartOpts('km').plugins,legend:{display:true,labels:{color:'#8aa0b0'}}},scales:{...chartOpts('km').scales,x:{...chartOpts('km').scales.x,stacked:true},y:{...chartOpts('km').scales.y,stacked:true}}}});
   if(chartDenivAnnees) chartDenivAnnees.destroy();
-  chartDenivAnnees=new Chart(document.getElementById('chartDenivAnnees'),{
-    type:'bar',
-    data:{labels:years,datasets:[{label:'Dénivelé (m)',data:years.map(y=>byYear[y].deniv),backgroundColor:'rgba(255,107,53,0.3)',borderColor:'#ff6b35',borderWidth:2,borderRadius:6}]},
-    options:chartOpts('m')
-  });
-
+  chartDenivAnnees=new Chart(document.getElementById('chartDenivAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Dénivelé (m)',data:years.map(y=>byYear[y].deniv),backgroundColor:'rgba(255,107,53,0.3)',borderColor:'#ff6b35',borderWidth:2,borderRadius:6}]},options:chartOpts('m')});
   if(chartNbAnnees) chartNbAnnees.destroy();
-  chartNbAnnees=new Chart(document.getElementById('chartNbAnnees'),{
-    type:'bar',
-    data:{labels:years,datasets:[{label:'Sorties',data:years.map(y=>byYear[y].nb),backgroundColor:'rgba(192,132,252,0.3)',borderColor:'#c084fc',borderWidth:2,borderRadius:6}]},
-    options:chartOpts('sorties')
-  });
-
-  // ── Mois le plus actif ──
+  chartNbAnnees=new Chart(document.getElementById('chartNbAnnees'),{type:'bar',data:{labels:years,datasets:[{label:'Sorties',data:years.map(y=>byYear[y].nb),backgroundColor:'rgba(192,132,252,0.3)',borderColor:'#c084fc',borderWidth:2,borderRadius:6}]},options:chartOpts('sorties')});
   if(chartMoisActif) chartMoisActif.destroy();
-  chartMoisActif=new Chart(document.getElementById('chartMoisActif'),{
-    type:'bar',
-    data:{labels:lblMois,datasets:[
-      {label:'Distance (km)',data:moisDist.map(v=>Math.round(v)),backgroundColor:moisDist.map((_,i)=>i===moisMax?'rgba(255,208,96,0.7)':'rgba(255,208,96,0.2)'),borderColor:'#ffd060',borderWidth:2,borderRadius:6}
-    ]},
-    options:chartOpts('km')
-  });
-
-  // ── Cumul 5 dernières années + meilleure année (timeline jours) ──
+  chartMoisActif=new Chart(document.getElementById('chartMoisActif'),{type:'bar',data:{labels:lblMois,datasets:[
+    {label:'Distance (km)',data:moisDist.map(v=>Math.round(v)),backgroundColor:moisDist.map((_,i)=>i===moisMax?'rgba(255,208,96,0.7)':'rgba(255,208,96,0.2)'),borderColor:'#ffd060',borderWidth:2,borderRadius:6}
+  ]},options:chartOpts('km')});
   const last5 = years.slice(-5);
   const cumulDatasets = [];
   const anneeColors5 = ['#00d4ff','#ff6b35','#39ff8f','#ffd060','#c084fc'];
-
-  // Génère les données jour par jour (1→365) avec cumul
   function cumulParJour(annee) {
     const ys = sorties.filter(s=>s.annee===parseInt(annee)).sort((a,b)=>new Date(a.dateDebut)-new Date(b.dateDebut));
     const pts = new Array(366).fill(null);
@@ -1107,13 +1123,8 @@ function renderCompare(){
       cumul += +s.dist||0;
       pts[jour] = Math.round(cumul*10)/10;
     });
-    // Interpoler les jours sans sortie (garder le dernier cumul)
     let last = 0;
-    for(let i=0; i<366; i++) {
-      if(pts[i]!==null) last=pts[i];
-      else pts[i]=last;
-    }
-    // Couper après le dernier jour réel de l'année
+    for(let i=0; i<366; i++) { if(pts[i]!==null) last=pts[i]; else pts[i]=last; }
     const lastSortie = ys[ys.length-1];
     if(lastSortie && lastSortie.dateDebut) {
       const d = new Date(lastSortie.dateDebut);
@@ -1123,48 +1134,21 @@ function renderCompare(){
     }
     return pts;
   }
-
-  // Meilleure année
   if(!last5.includes(String(bestYear))) {
     const pts = cumulParJour(bestYear);
     cumulDatasets.push({label:`🏆 ${bestYear}`,data:pts,borderColor:'#ff4060',borderWidth:2,tension:0.4,pointRadius:0,borderDash:[6,3],fill:false});
   }
-
   last5.forEach((y,i)=>{
     const pts = cumulParJour(y);
     const isLast = y===years[years.length-1];
     cumulDatasets.push({label:String(y),data:pts,borderColor:anneeColors5[i%anneeColors5.length],borderWidth:isLast?3:1.5,tension:0.4,pointRadius:0,fill:false});
   });
-
-  // Labels : jours de l'année → afficher les mois
   const lblJours = Array.from({length:366},(_,i)=>{
     const d = new Date(2024, 0, 1+i);
     return d.getDate()===1 ? ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][d.getMonth()] : '';
   });
-
   if(chartCumulAnnees) chartCumulAnnees.destroy();
-  chartCumulAnnees=new Chart(document.getElementById('chartCumulAnnees'),{
-    type:'line',
-    data:{labels:lblJours,datasets:cumulDatasets},
-    options:{
-      responsive:true,maintainAspectRatio:true,
-      plugins:{
-        legend:{display:true,labels:{color:'#8aa0b0',boxWidth:20}},
-        tooltip:{callbacks:{
-          title:items=>{
-            const idx=items[0].dataIndex;
-            const d=new Date(2024,0,1+idx);
-            return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
-          },
-          label:i=>i.dataset.label+': '+i.raw+' km'
-        }}
-      },
-      scales:{
-        x:{ticks:{color:'#5a7080',font:{size:11},maxRotation:0,autoSkip:false,callback:(v,i)=>lblJours[i]},grid:{color:'rgba(255,255,255,0.03)'}},
-        y:{ticks:{color:'#5a7080',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}
-      }
-    }
-  });
+  chartCumulAnnees=new Chart(document.getElementById('chartCumulAnnees'),{type:'line',data:{labels:lblJours,datasets:cumulDatasets},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:true,labels:{color:'#8aa0b0',boxWidth:20}},tooltip:{callbacks:{title:items=>{const idx=items[0].dataIndex;const d=new Date(2024,0,1+idx);return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});},label:i=>i.dataset.label+': '+i.raw+' km'}}},scales:{x:{ticks:{color:'#5a7080',font:{size:11},maxRotation:0,autoSkip:false,callback:(v,i)=>lblJours[i]},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#5a7080',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}}});
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1173,26 +1157,21 @@ function renderCompare(){
 function showDetail(id) {
   const s = sorties.find(x => x.id === id);
   if(!s) return;
-
-  // Titre et date
+  currentDetailId = id;
   document.getElementById('detail-titre').textContent = s.nom || '—';
   document.getElementById('detail-date').textContent = fmtDate(s.dateDebut);
-
-  // Badge catégorie
   const cat = (s.categorie||'Autre').toLowerCase();
   const catLabel = {'route':'🚴 Route','mtb':'🚵 Mtb','autre':'🚲 Autre'}[cat] || s.categorie;
   document.getElementById('detail-cat-badge').innerHTML = `<span class="cat-badge ${cat}">${catLabel}</span>`;
-
-  // KPI vignettes principales
   const kpis = [
-    {c:'c1', icon:'📏', label:'Distance',      val:(+s.dist||0).toFixed(2),         unit:'kilomètres'},
-    {c:'c2', icon:'⛰', label:'Dénivelé +',    val:Math.round(+s.denivPos||0),       unit:'mètres D+'},
-    {c:'c3', icon:'⏱', label:'Durée globale', val:fmtDur(s.dureeGlob),             unit:'heure : min : sec'},
-    {c:'c4', icon:'🚴', label:'Durée déplacement', val:fmtDur(s.dureeDepl),         unit:'temps en mouvement'},
-    {c:'c1', icon:'☕', label:'Durée pause',   val:fmtDur(s.dureePause),            unit:'temps à l\'arrêt'},
-    {c:'c2', icon:'🌐', label:'Vit. moy. globale', val:(+s.vitGlob||0).toFixed(1), unit:'km/h'},
-    {c:'c3', icon:'🚀', label:'Vit. moy. dépl.',   val:(+s.vitDepl||0).toFixed(1), unit:'km/h en mouvement'},
-    {c:'c4', icon:'⚡', label:'Vitesse max',   val:(+s.vitMax||0).toFixed(1),       unit:'km/h'},
+    {c:'c1', icon:'📏', label:'Distance',           val:(+s.dist||0).toFixed(2),         unit:'kilomètres'},
+    {c:'c2', icon:'⛰', label:'Dénivelé +',          val:Math.round(+s.denivPos||0),       unit:'mètres D+'},
+    {c:'c3', icon:'⏱', label:'Durée globale',       val:fmtDur(s.dureeGlob),             unit:'heure : min : sec'},
+    {c:'c4', icon:'🚴', label:'Durée déplacement',   val:fmtDur(s.dureeDepl),             unit:'temps en mouvement'},
+    {c:'c1', icon:'☕', label:'Durée pause',          val:fmtDur(s.dureePause),            unit:'temps à l\'arrêt'},
+    {c:'c2', icon:'🌐', label:'Vit. moy. globale',   val:(+s.vitGlob||0).toFixed(1),      unit:'km/h'},
+    {c:'c3', icon:'🚀', label:'Vit. moy. dépl.',     val:(+s.vitDepl||0).toFixed(1),      unit:'km/h en mouvement'},
+    {c:'c4', icon:'⚡', label:'Vitesse max',          val:(+s.vitMax||0).toFixed(1),       unit:'km/h'},
     ...(s.puissanceMoy ? [{c:'c1', icon:'⚡', label:'Puissance moy.', val:Math.round(s.puissanceMoy), unit:'watts'}] : []),
     ...(s.puissanceMax ? [{c:'c2', icon:'🔋', label:'Puissance max',  val:Math.round(s.puissanceMax), unit:'watts'}] : []),
     ...(s.cadenceMoy   ? [{c:'c3', icon:'🔄', label:'Cadence moy.',   val:Math.round(s.cadenceMoy),   unit:'rpm'}] : []),
@@ -1200,42 +1179,52 @@ function showDetail(id) {
     ...(s.tempMoy!==null&&s.tempMoy!==undefined ? [{c:'c1', icon:'🌡️', label:'Température moy.', val:s.tempMoy!==null?s.tempMoy.toFixed(1):'—', unit:'°C'}] : []),
   ];
   document.getElementById('detail-kpis').innerHTML = kpis.map(k=>`
-    <div class="kpi ${k.c}">
-      <div class="kpi-icon">${k.icon}</div>
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-val">${k.val||'—'}</div>
-      <div class="kpi-unit">${k.unit}</div>
-    </div>`).join('');
-
-  // Durées détaillées
+    <div class="kpi ${k.c}"><div class="kpi-icon">${k.icon}</div><div class="kpi-label">${k.label}</div><div class="kpi-val">${k.val||'—'}</div><div class="kpi-unit">${k.unit}</div></div>`).join('');
   document.getElementById('detail-durees').innerHTML = [
     ['Durée globale',      fmtDur(s.dureeGlob)],
     ['Durée déplacement',  fmtDur(s.dureeDepl)],
     ['Durée pause',        fmtDur(s.dureePause)],
   ].map(([l,v])=>`<div class="detail-stat"><span class="detail-stat-label">${l}</span><span class="detail-stat-val">${v||'—'}</span></div>`).join('');
-
-  // Montée
   document.getElementById('detail-montee').innerHTML = [
     ['Distance montée',    (+s.distMontee||0).toFixed(2)+' km'],
     ['Durée montée',       fmtDur(s.dureeMontee)],
     ['Vit. moy. montée',   (+s.vitMontee||0).toFixed(1)+' km/h'],
     ['Pente moyenne',      (+s.pente||0).toFixed(1)+' %'],
   ].map(([l,v])=>`<div class="detail-stat"><span class="detail-stat-label">${l}</span><span class="detail-stat-val">${v||'—'}</span></div>`).join('');
-
-  // Altitude
   document.getElementById('detail-altitude').innerHTML = [
-    ['Altitude min',     s.altMin!==null ? Math.round(s.altMin)+' m' : '—'],
-    ['Altitude max',     s.altMax!==null ? Math.round(s.altMax)+' m' : '—'],
-    ['Dénivelé +',       Math.round(+s.denivPos||0)+' m'],
-    ['Dénivelé -',       Math.round(+s.denivNeg||0)+' m'],
-    ['Température moy.', s.tempMoy!==null&&s.tempMoy!==undefined ? s.tempMoy.toFixed(1)+' °C' : '—'],
-    ['Temp. min / max',  (s.tempMin!==null&&s.tempMin!==undefined ? s.tempMin+' °C' : '—')+' / '+(s.tempMax!==null&&s.tempMax!==undefined ? s.tempMax+' °C' : '—')],
+    ['Altitude min',       s.altMin!==null ? Math.round(s.altMin)+' m' : '—'],
+    ['Altitude max',       s.altMax!==null ? Math.round(s.altMax)+' m' : '—'],
+    ['Dénivelé +',         Math.round(+s.denivPos||0)+' m'],
+    ['Dénivelé -',         Math.round(+s.denivNeg||0)+' m'],
+    ['Température moy.',   s.tempMoy!==null&&s.tempMoy!==undefined ? s.tempMoy.toFixed(1)+' °C' : '—'],
+    ['Temp. min / max',    (s.tempMin!==null&&s.tempMin!==undefined ? s.tempMin+' °C' : '—')+' / '+(s.tempMax!==null&&s.tempMax!==undefined ? s.tempMax+' °C' : '—')],
   ].map(([l,v])=>`<div class="detail-stat"><span class="detail-stat-label">${l}</span><span class="detail-stat-val">${v||'—'}</span></div>`).join('');
-
-  // Afficher la page
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-detail').classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  EXPORT EXCEL
+// ══════════════════════════════════════════════════════════
+function exportExcel() {
+  const data = sorties.map(s => ({
+    Date: s.dateDebut ? new Date(s.dateDebut).toLocaleDateString('fr-FR') : '',
+    Nom: s.nom,
+    Categorie: s.categorie,
+    'Distance (km)': +s.dist||0,
+    'Deniv+ (m)': +s.denivPos||0,
+    'Duree globale': fmtDur(s.dureeGlob),
+    'Vit. moy. (km/h)': +s.vitGlob||0,
+    'Vit. depl. (km/h)': +s.vitDepl||0,
+    'Vit. max (km/h)': +s.vitMax||0,
+    'Dist. montee (km)': +s.distMontee||0,
+    'Pente (%)': +s.pente||0,
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sorties');
+  XLSX.writeFile(wb, 'VeloLog_export.xlsx');
 }
 
 // ══════════════════════════════════════════════════════════

@@ -933,7 +933,7 @@ function renderDashboard() {
   let cumul=0;
   const cumulData=sorted.map(s=>{cumul+=+s.dist||0;return{x:new Date(s.dateDebut).getTime(),y:Math.round(cumul*10)/10};});
   const debutAnnee=new Date(annee,0,1).getTime();
-  const finAnnee=new Date(annee,11,31).getTime();
+  const finAnnee=cumulData.length>0?cumulData[cumulData.length-1].x:new Date(annee,11,31).getTime();
   const cumulFinal=[{x:debutAnnee,y:0},...cumulData];
   const lblsMois=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
   if(chartCumul) chartCumul.destroy();

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🚴 Ultra Tracker</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #04060a;
+  --card: #0a0f18;
+  --card2: #0d1420;
+  --border: #1a2535;
+  --accent: #00d4ff;
+  --orange: #ff6b35;
+  --green: #39ff8f;
+  --yellow: #ffd060;
+  --danger: #ff4060;
+  --text: #e8f0f8;
+  --muted: #5a7080;
+  --muted2: #8aa0b0;
+}
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:'Segoe UI',Arial,sans-serif; overflow-x:hidden; }
+body::before {
+  content:''; position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,212,255,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 90%, rgba(255,107,53,0.05) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+.app { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; padding-bottom:16px; }
+
+header {
+  padding:18px 20px 14px;
+  background:linear-gradient(180deg, rgba(0,212,255,0.08) 0%, transparent 100%);
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); }
+.header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+.brand { font-size:1.3rem; font-weight:900; letter-spacing:3px; text-transform:uppercase; }
+.brand span { color:var(--accent); }
+.status-pill { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:rgba(255,255,255,0.04); font-size:0.7rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--muted); transition:all 0.3s; }
+.dot.active { background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 1.5s infinite; }
+.dot.error { background:var(--danger); }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.subtitle { font-size:0.72rem; color:var(--muted2); letter-spacing:1px; }
+
+.kpi-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:14px 14px 0; }
+.kpi { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 10px; text-align:center; position:relative; overflow:hidden; }
+.kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.kpi.k1::before { background:linear-gradient(90deg,var(--accent),transparent); }
+.kpi.k2::before { background:linear-gradient(90deg,var(--orange),transparent); }
+.kpi.k3::before { background:linear-gradient(90deg,var(--green),transparent); }
+.kpi-label { font-size:0.58rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:3px; }
+.kpi-val { font-size:1.4rem; font-weight:900; letter-spacing:1px; line-height:1; }
+.kpi-unit { font-size:0.58rem; color:var(--muted); margin-top:2px; }
+.kpi.k1 .kpi-val { color:var(--accent); }
+.kpi.k2 .kpi-val { color:var(--orange); }
+.kpi.k3 .kpi-val { color:var(--green); }
+
+.village-main { margin:14px 14px 0; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; position:relative; overflow:hidden; }
+.village-main::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 70%); pointer-events:none; }
+.vm-label { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.vm-label::before,.vm-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.vm-nom { font-size:1.8rem; font-weight:900; letter-spacing:2px; text-align:center; color:var(--accent); text-transform:uppercase; margin-bottom:4px; text-shadow:0 0 30px rgba(0,212,255,0.4); min-height:44px; display:flex; align-items:center; justify-content:center; }
+.vm-dist { text-align:center; font-size:0.75rem; color:var(--muted2); }
+
+.next-card { margin:10px 14px 0; background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px; }
+.next-icon { width:40px; height:40px; border-radius:10px; background:rgba(255,107,53,0.12); border:1px solid rgba(255,107,53,0.3); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.next-info { flex:1; min-width:0; }
+.next-label { font-size:0.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:2px; }
+.next-nom { font-size:1rem; font-weight:700; color:var(--orange); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.next-km { font-size:0.72rem; color:var(--muted2); margin-top:2px; }
+.next-dist { font-size:1.3rem; font-weight:900; color:var(--orange); text-align:right; flex-shrink:0; }
+.next-dist span { font-size:0.62rem; color:var(--muted); display:block; text-align:right; }
+
+.progress-section { padding:12px 14px 0; }
+.prog-label { font-size:0.62rem; color:var(--muted); margin-bottom:6px; display:flex; justify-content:space-between; }
+.prog-bar { height:6px; background:var(--border); border-radius:3px; overflow:visible; position:relative; }
+.prog-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--green)); transition:width 1s ease; position:relative; }
+.prog-fill::after { content:''; position:absolute; right:-4px; top:-3px; width:12px; height:12px; border-radius:50%; background:var(--green); box-shadow:0 0 10px var(--green); }
+
+.btn-row { display:flex; gap:10px; padding:12px 14px 0; }
+.btn { flex:1; padding:13px; border:none; border-radius:12px; font-size:0.82rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-start { background:linear-gradient(135deg,var(--accent),#0090b8); color:#04060a; box-shadow:0 4px 20px rgba(0,212,255,0.3); }
+.btn-stop { background:rgba(255,64,96,0.15); color:var(--danger); border:1px solid rgba(255,64,96,0.3); }
+.btn-tg { background:rgba(57,255,143,0.12); color:var(--green); border:1px solid rgba(57,255,143,0.3); }
+
+.tg-status { margin:10px 14px 0; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+.tg-icon { font-size:1.4rem; }
+.tg-info { flex:1; }
+.tg-label { font-size:0.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; }
+.tg-val { font-size:0.82rem; color:var(--green); font-weight:600; margin-top:2px; }
+
+.villages-section { flex:1; margin:12px 14px 0; background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.vs-header { padding:10px 14px; background:var(--card2); border-bottom:1px solid var(--border); font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px; display:flex; justify-content:space-between; align-items:center; }
+.villages-list { max-height:220px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+.village-item { display:flex; align-items:center; padding:9px 14px; border-bottom:1px solid rgba(30,42,53,0.5); gap:10px; font-size:0.8rem; }
+.village-item:last-child { border-bottom:none; }
+.village-item.passed { opacity:0.3; }
+.village-item.current { background:rgba(0,212,255,0.08); border-left:2px solid var(--accent); }
+.village-item.next-v { background:rgba(255,107,53,0.06); border-left:2px solid var(--orange); }
+.vi-num { font-size:0.62rem; color:var(--muted); width:20px; text-align:right; flex-shrink:0; }
+.vi-dot { width:7px; height:7px; border-radius:50%; background:var(--border); flex-shrink:0; }
+.village-item.passed .vi-dot { background:var(--muted); }
+.village-item.current .vi-dot { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+.village-item.next-v .vi-dot { background:var(--orange); }
+.vi-nom { flex:1; font-weight:500; }
+.village-item.current .vi-nom { color:var(--accent); font-weight:700; }
+.village-item.next-v .vi-nom { color:var(--orange); }
+.vi-km { font-size:0.7rem; color:var(--muted); }
+
+.sms-log { margin:10px 14px 0; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.sms-log-header { padding:9px 14px; background:var(--card2); border-bottom:1px solid var(--border); font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:2px; }
+.sms-log-list { max-height:100px; overflow-y:auto; }
+.sms-item { padding:7px 14px; border-bottom:1px solid rgba(30,42,53,0.5); font-size:0.72rem; display:flex; gap:10px; align-items:center; }
+.sms-item:last-child { border-bottom:none; }
+.sms-time { color:var(--muted); flex-shrink:0; }
+.sms-text { color:var(--green); }
+
+.toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px); background:var(--card); border:1px solid var(--accent); border-radius:12px; padding:11px 20px; font-size:0.82rem; font-weight:600; z-index:1000; transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; box-shadow:0 4px 20px rgba(0,212,255,0.2); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.green { border-color:var(--green); color:var(--green); }
+.toast.orange { border-color:var(--orange); color:var(--orange); }
+.toast.error { border-color:var(--danger); color:var(--danger); }
+
+.radar { position:relative; width:50px; height:50px; margin:0 auto 6px; }
+.radar-ring { position:absolute; inset:0; border-radius:50%; border:1px solid var(--accent); opacity:0; }
+.radar-ring:nth-child(1){animation:radar 2s 0s infinite;}
+.radar-ring:nth-child(2){animation:radar 2s 0.7s infinite;}
+.radar-ring:nth-child(3){animation:radar 2s 1.4s infinite;}
+.radar-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+@keyframes radar { 0%{transform:scale(0.3);opacity:0.8;} 100%{transform:scale(1);opacity:0;} }
+::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="header-top">
+      <div class="brand">🚴 <span>ULTRA</span> TRACKER</div>
+      <div class="status-pill">
+        <div class="dot" id="gps-dot"></div>
+        <span id="gps-status">GPS OFF</span>
+      </div>
+    </div>
+    <div class="subtitle">Ultra 40 cols · 324 km · Bugey &amp; Valromey</div>
+  </header>
+
+  <div class="kpi-row">
+    <div class="kpi k1">
+      <div class="kpi-label">Parcourus</div>
+      <div class="kpi-val" id="kpi-km">—</div>
+      <div class="kpi-unit">km</div>
+    </div>
+    <div class="kpi k2">
+      <div class="kpi-label">Prochain</div>
+      <div class="kpi-val" id="kpi-next-dist">—</div>
+      <div class="kpi-unit">km</div>
+    </div>
+    <div class="kpi k3">
+      <div class="kpi-label">Villages</div>
+      <div class="kpi-val" id="kpi-villages">0/67</div>
+      <div class="kpi-unit">passés</div>
+    </div>
+  </div>
+
+  <div class="village-main">
+    <div class="vm-label">Village actuel</div>
+    <div class="vm-nom" id="village-actuel">
+      <div style="text-align:center">
+        <div class="radar"><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-center"></div></div>
+        <div style="font-size:0.75rem;color:var(--muted);letter-spacing:2px;">EN ATTENTE GPS</div>
+      </div>
+    </div>
+    <div class="vm-dist" id="village-actuel-dist"></div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-icon">➡️</div>
+    <div class="next-info">
+      <div class="next-label">Prochain village</div>
+      <div class="next-nom" id="next-nom">—</div>
+      <div class="next-km" id="next-km-total"></div>
+    </div>
+    <div class="next-dist" id="next-dist">—<span>km</span></div>
+  </div>
+
+  <div class="progress-section">
+    <div class="prog-label">
+      <span>Départ</span>
+      <span id="prog-pct" style="color:var(--accent);font-weight:700;">0%</span>
+      <span>324 km</span>
+    </div>
+    <div class="prog-bar">
+      <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+    <div style="text-align:center;margin-top:6px;font-size:0.58rem;color:var(--yellow);">🔄 Demi-tour ~162 km</div>
+  </div>
+
+  <!-- Statut Telegram -->
+  <div class="tg-status">
+    <div class="tg-icon">✈️</div>
+    <div class="tg-info">
+      <div class="tg-label">Notifications Telegram → Garmin 830</div>
+      <div class="tg-val" id="tg-val">Prêt · Bot configuré ✓</div>
+    </div>
+    <div id="tg-dot" class="dot"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-start" id="btn-start" onclick="toggleTracking()">
+      <span id="btn-icon">▶</span>
+      <span id="btn-label">DÉMARRER</span>
+    </button>
+    <button class="btn btn-tg" onclick="testTelegram()">
+      ✈️ TEST
+    </button>
+  </div>
+
+  <div class="villages-section">
+    <div class="vs-header">
+      <span>📍 Villages</span>
+      <span id="vs-count" style="color:var(--accent)">67 villages</span>
+    </div>
+    <div class="villages-list" id="villages-list"></div>
+  </div>
+
+  <div class="sms-log">
+    <div class="sms-log-header">✈️ Messages Telegram envoyés</div>
+    <div class="sms-log-list" id="sms-log"></div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG TELEGRAM
+// ══════════════════════════════════════════════════════════
+const TG_TOKEN   = '8365892145:AAEthGgrUicLfX_rj58s6H3LhNExbd1jmlU';
+const TG_CHAT_ID = '8659184335';
+
+// ══════════════════════════════════════════════════════════
+//  DONNÉES VILLAGES
+// ══════════════════════════════════════════════════════════
+const VILLAGES = [{"nom":"La Léchère","lat":45.970386,"lon":5.595904,"km":0.0},{"nom":"La Polatière","lat":45.981494,"lon":5.576469,"km":3.1},{"nom":"Aranc","lat":45.995452,"lon":5.546795,"km":6.2},{"nom":"Corlier","lat":46.032569,"lon":5.495524,"km":12.4},{"nom":"Boyeux","lat":46.042792,"lon":5.480611,"km":15.4},{"nom":"Jujurieux","lat":46.035626,"lon":5.410682,"km":24.5},{"nom":"Saint-Jean-le-Vieux","lat":46.02041,"lon":5.408963,"km":27.6},{"nom":"L'Abergement-de-Varey","lat":45.998934,"lon":5.425672,"km":30.6},{"nom":"Nivollet-Montgriffon","lat":45.982459,"lon":5.439803,"km":33.6},{"nom":"Saint-Rambert-en-Bugey","lat":45.969348,"lon":5.446121,"km":36.6},{"nom":"Les Allymes","lat":45.969514,"lon":5.395051,"km":48.7},{"nom":"Chanves","lat":45.960469,"lon":5.366312,"km":51.7},{"nom":"Bettant","lat":45.947134,"lon":5.36298,"km":54.7},{"nom":"Vaux-en-Bugey","lat":45.931431,"lon":5.356436,"km":57.8},{"nom":"Torcieu","lat":45.905139,"lon":5.393475,"km":63.9},{"nom":"Souclin","lat":45.885839,"lon":5.405437,"km":66.9},{"nom":"Villebois","lat":45.868611,"lon":5.465452,"km":75.9},{"nom":"Bénonces","lat":45.856178,"lon":5.490103,"km":78.9},{"nom":"Ordonnaz","lat":45.837819,"lon":5.513902,"km":82.1},{"nom":"Arandas","lat":45.862519,"lon":5.518497,"km":88.3},{"nom":"Saint-Rambert-en-Bugey","lat":45.92868,"lon":5.444742,"km":100.5},{"nom":"Oncieu","lat":45.950391,"lon":5.470314,"km":106.5},{"nom":"Évosges","lat":45.964136,"lon":5.486603,"km":112.6},{"nom":"Tenay","lat":45.935483,"lon":5.508581,"km":118.6},{"nom":"La Burbanche","lat":45.885447,"lon":5.538974,"km":127.7},{"nom":"Prémillieu","lat":45.879609,"lon":5.550875,"km":130.7},{"nom":"Sainte-Blaizine","lat":45.888491,"lon":5.584685,"km":136.8},{"nom":"Gros-Jean","lat":45.90356,"lon":5.579419,"km":139.8},{"nom":"Dergis-Michaud","lat":45.927714,"lon":5.565151,"km":142.8},{"nom":"Longecombe","lat":45.951338,"lon":5.559085,"km":145.8},{"nom":"La Polatière","lat":45.969285,"lon":5.581138,"km":148.9},{"nom":"La Maladière","lat":45.977685,"lon":5.601018,"km":152.0},{"nom":"Mangini","lat":45.968071,"lon":5.620845,"km":155.0},{"nom":"Lompnieu","lat":45.984071,"lon":5.639562,"km":158.0},{"nom":"Haut Valromey","lat":45.996452,"lon":5.663429,"km":164.0},{"nom":"Valromey-sur-Séran","lat":45.971056,"lon":5.6612,"km":167.1},{"nom":"Sutrieu","lat":45.945421,"lon":5.656725,"km":170.1},{"nom":"Chongnes","lat":45.894945,"lon":5.674829,"km":176.2},{"nom":"Artemare","lat":45.877993,"lon":5.690201,"km":179.2},{"nom":"Le Caton","lat":45.863225,"lon":5.675205,"km":182.3},{"nom":"Muffieu","lat":45.897182,"lon":5.65797,"km":188.3},{"nom":"Sutrieu","lat":45.911662,"lon":5.643588,"km":191.5},{"nom":"Teillère","lat":45.928926,"lon":5.605906,"km":197.6},{"nom":"Sainte-Blaizine","lat":45.902316,"lon":5.602632,"km":200.6},{"nom":"Plateau d'Hauteville","lat":45.878328,"lon":5.603271,"km":203.6},{"nom":"Le Murat","lat":45.856184,"lon":5.623262,"km":206.6},{"nom":"Saint-Martin-de-Bavel","lat":45.846474,"lon":5.669152,"km":215.7},{"nom":"Ceyzérieu","lat":45.840306,"lon":5.702162,"km":218.7},{"nom":"Béon","lat":45.849157,"lon":5.765157,"km":224.8},{"nom":"Culoz","lat":45.855239,"lon":5.782494,"km":227.9},{"nom":"Anglefort","lat":45.889766,"lon":5.781618,"km":237.0},{"nom":"Culoz","lat":45.879543,"lon":5.775303,"km":240.0},{"nom":"Anglefort","lat":45.895347,"lon":5.761858,"km":243.0},{"nom":"Virieu-le-Petit","lat":45.9002,"lon":5.756741,"km":246.0},{"nom":"Moulin d'Arvières","lat":45.922604,"lon":5.747836,"km":252.0},{"nom":"Bordèze","lat":45.93064,"lon":5.733917,"km":255.1},{"nom":"Arvière-en-Valromey","lat":45.95272,"lon":5.722976,"km":258.2},{"nom":"Corbonod","lat":45.951522,"lon":5.767223,"km":267.2},{"nom":"Chanay","lat":45.997937,"lon":5.784341,"km":282.3},{"nom":"Injoux","lat":46.040361,"lon":5.779808,"km":288.3},{"nom":"Injoux-Génissiat","lat":46.032543,"lon":5.756276,"km":294.4},{"nom":"Surjoux-Lhopital","lat":46.022103,"lon":5.749958,"km":297.4},{"nom":"Chanay","lat":46.004509,"lon":5.738892,"km":300.5},{"nom":"Recousat","lat":45.992657,"lon":5.72267,"km":303.5},{"nom":"Haut Valromey","lat":46.001078,"lon":5.700177,"km":306.5},{"nom":"Valromey-sur-Séran","lat":45.976832,"lon":5.65417,"km":312.6},{"nom":"Lompnieu","lat":45.980869,"lon":5.642909,"km":315.6},{"nom":"Plateau d'Hauteville","lat":45.969664,"lon":5.624511,"km":318.7},{"nom":"Belligneux","lat":45.981359,"lon":5.606048,"km":321.7},{"nom":"La Léchère","lat":45.970393,"lon":5.595541,"km":323.8}];
+
+const DIST_TOTALE = 323.8;
+
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let tracking = false;
+let watchId = null;
+let currentVillageIdx = -1;
+let passedVillages = new Set();
+let tgSent = new Set();
+let posLat = null, posLon = null;
+
+// ══════════════════════════════════════════════════════════
+//  TELEGRAM
+// ══════════════════════════════════════════════════════════
+async function envoyerTelegram(message) {
+  try {
+    const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`;
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({chat_id: TG_CHAT_ID, text: message, parse_mode:'HTML'})
+    });
+    const data = await resp.json();
+    if(data.ok) {
+      document.getElementById('tg-dot').className = 'dot active';
+      logMessage(message);
+      showToast('✈️ Telegram envoyé !', 'green');
+      setTimeout(()=>document.getElementById('tg-dot').className='dot active', 3000);
+      return true;
+    } else {
+      showToast('❌ Erreur: ' + data.description, 'error');
+      return false;
+    }
+  } catch(e) {
+    showToast('❌ Réseau: ' + e.message, 'error');
+    return false;
+  }
+}
+
+function testTelegram() {
+  envoyerTelegram('🚴 <b>Ultra Tracker TEST</b>\n\n✅ App connectée et fonctionnelle !\n📍 Prochain village → <b>Aranc</b> (6.2 km)\n\nBon courage pour l\'ultra ! 💪');
+}
+
+function logMessage(msg) {
+  const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const log = document.getElementById('sms-log');
+  const item = document.createElement('div');
+  item.className = 'sms-item';
+  item.innerHTML = `<span class="sms-time">${now}</span><span class="sms-text">${msg.replace(/<[^>]+>/g,'').substring(0,55)}…</span>`;
+  log.prepend(item);
+}
+
+// ══════════════════════════════════════════════════════════
+//  GPS
+// ══════════════════════════════════════════════════════════
+function toggleTracking() {
+  if(!tracking) startTracking(); else stopTracking();
+}
+
+function startTracking() {
+  if(!navigator.geolocation) { showToast('❌ GPS non disponible','error'); return; }
+  tracking = true;
+  document.getElementById('btn-icon').textContent = '⏹';
+  document.getElementById('btn-label').textContent = 'STOP';
+  document.getElementById('btn-start').className = 'btn btn-stop';
+  document.getElementById('gps-dot').className = 'dot active';
+  document.getElementById('gps-status').textContent = 'GPS ON';
+  showToast('🚴 Tracking démarré !','green');
+  envoyerTelegram('🚴 <b>Ultra démarré !</b>\n📍 Départ de La Léchère\n🏁 324 km · 40 cols\n\nBonne route Fabien ! 💪🔥');
+  watchId = navigator.geolocation.watchPosition(onPosition, onGPSError, {enableHighAccuracy:true, timeout:10000, maximumAge:5000});
+}
+
+function stopTracking() {
+  tracking = false;
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+  document.getElementById('btn-icon').textContent = '▶';
+  document.getElementById('btn-label').textContent = 'DÉMARRER';
+  document.getElementById('btn-start').className = 'btn btn-start';
+  document.getElementById('gps-dot').className = 'dot';
+  document.getElementById('gps-status').textContent = 'GPS OFF';
+  showToast('⏹ Tracking arrêté','');
+}
+
+function onGPSError(err) {
+  document.getElementById('gps-dot').className = 'dot error';
+  document.getElementById('gps-status').textContent = 'GPS ERR';
+}
+
+// ══════════════════════════════════════════════════════════
+//  LOGIQUE PRINCIPALE
+// ══════════════════════════════════════════════════════════
+function onPosition(pos) {
+  posLat = pos.coords.latitude;
+  posLon = pos.coords.longitude;
+
+  // Trouver village le plus proche
+  let minDist = Infinity, closestIdx = -1;
+  VILLAGES.forEach((v,i) => {
+    const d = haversine(posLat, posLon, v.lat, v.lon) * 1000;
+    if(d < minDist) { minDist = d; closestIdx = i; }
+  });
+
+  if(minDist < 1500 && closestIdx !== currentVillageIdx) {
+    currentVillageIdx = closestIdx;
+    for(let i=0; i<=closestIdx; i++) passedVillages.add(i);
+
+    // Envoyer message Telegram
+    if(!tgSent.has(closestIdx)) {
+      const cur = VILLAGES[closestIdx];
+      const nextIdx = closestIdx + 1;
+      let msg = `📍 <b>${cur.nom}</b> (km ${cur.km})`;
+      if(nextIdx < VILLAGES.length) {
+        const nv = VILLAGES[nextIdx];
+        const distNext = haversine(posLat, posLon, nv.lat, nv.lon).toFixed(1);
+        msg += `\n➡️ Prochain : <b>${nv.nom}</b> dans ${distNext} km (km ${nv.km})`;
+      }
+      msg += `\n🏁 ${cur.km}/${DIST_TOTALE} km parcourus (${(cur.km/DIST_TOTALE*100).toFixed(0)}%)`;
+      envoyerTelegram(msg);
+      tgSent.add(closestIdx);
+    }
+  }
+
+  updateUI(closestIdx, minDist);
+}
+
+function updateUI(closestIdx, distMetres) {
+  const v = closestIdx >= 0 ? VILLAGES[closestIdx] : null;
+  const nomEl = document.getElementById('village-actuel');
+  if(v && distMetres < 1500) {
+    nomEl.style.fontSize = v.nom.length > 14 ? '1.2rem' : '1.8rem';
+    nomEl.textContent = v.nom.toUpperCase();
+    document.getElementById('village-actuel-dist').textContent = `📍 ${Math.round(distMetres)}m · km ${v.km}`;
+  } else {
+    nomEl.innerHTML = '<div style="font-size:0.75rem;color:var(--muted)">Hors village</div>';
+    document.getElementById('village-actuel-dist').textContent = posLat ? `GPS actif · ${posLat.toFixed(4)}, ${posLon.toFixed(4)}` : '';
+  }
+
+  const nextIdx = (closestIdx >= 0 ? closestIdx : 0) + 1;
+  if(nextIdx < VILLAGES.length && posLat) {
+    const nv = VILLAGES[nextIdx];
+    const distNext = haversine(posLat, posLon, nv.lat, nv.lon);
+    document.getElementById('next-nom').textContent = nv.nom;
+    document.getElementById('next-km-total').textContent = `km ${nv.km} du parcours`;
+    document.getElementById('next-dist').innerHTML = distNext.toFixed(1)+'<span>km</span>';
+    document.getElementById('kpi-next-dist').textContent = distNext.toFixed(1);
+  }
+
+  const km = v ? v.km : 0;
+  document.getElementById('kpi-km').textContent = km.toFixed(0);
+  document.getElementById('kpi-villages').textContent = `${passedVillages.size}/${VILLAGES.length}`;
+  const pct = (km/DIST_TOTALE*100).toFixed(0);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-pct').textContent = pct+'%';
+  document.getElementById('tg-val').textContent = `${tgSent.size} message(s) envoyé(s) · Bot actif ✓`;
+
+  renderVillagesList(closestIdx);
+}
+
+function renderVillagesList(currentIdx=-1) {
+  const list = document.getElementById('villages-list');
+  list.innerHTML = VILLAGES.map((v,i) => {
+    let cls = '';
+    if(i < currentIdx && passedVillages.has(i)) cls='passed';
+    else if(i===currentIdx) cls='current';
+    else if(i===currentIdx+1) cls='next-v';
+    return `<div class="village-item ${cls}">
+      <span class="vi-num">${i+1}</span>
+      <span class="vi-dot"></span>
+      <span class="vi-nom">${v.nom}</span>
+      <span class="vi-km">${v.km}km</span>
+    </div>`;
+  }).join('');
+  if(currentIdx>=0) {
+    const items = list.querySelectorAll('.village-item');
+    if(items[currentIdx]) items[currentIdx].scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+function haversine(lat1,lon1,lat2,lon2) {
+  const R=6371,d2r=Math.PI/180;
+  const dLat=(lat2-lat1)*d2r,dLon=(lon2-lon1)*d2r;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function showToast(msg,type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// Init
+renderVillagesList();
+</script>
+</body>
+</html>

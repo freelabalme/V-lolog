@@ -292,7 +292,7 @@ async function envoyerTelegram(message) {
 }
 
 function testTelegram() {
-  envoyerTelegram('🚴 <b>Ultra Tracker TEST</b>\n\n✅ \n Prochain village → <b>Aranc</b> (6.2 km)\n\nBon courage pour l\'ultra ! 💪');
+  envoyerTelegram('✅ TEST OK\n➡ Prochain: Aranc | 6.2km');
 }
 
 function logMessage(msg) {
@@ -320,7 +320,7 @@ function startTracking() {
   document.getElementById('gps-dot').className = 'dot active';
   document.getElementById('gps-status').textContent = 'GPS ON';
   showToast('🚴 Tracking démarré !','green');
-  envoyerTelegram('🚴 <b>Ultra démarré !</b>\n📍 Départ de La Léchère\n🏁 324 km · 40 cols\n\nBonne route Fabien ! 💪🔥');
+  envoyerTelegram('🚴 ULTRA DÉMARRÉ\n📍 La Léchère → 324km');
   watchId = navigator.geolocation.watchPosition(onPosition, onGPSError, {enableHighAccuracy:true, timeout:10000, maximumAge:5000});
 }
 
@@ -362,13 +362,11 @@ function onPosition(pos) {
     if(!tgSent.has(closestIdx)) {
       const cur = VILLAGES[closestIdx];
       const nextIdx = closestIdx + 1;
-      let msg = `📍 <b>${cur.nom}</b> (km ${cur.km})`;
+      let msg = `📍 ${cur.nom} | ${cur.km}km`;
       if(nextIdx < VILLAGES.length) {
         const nv = VILLAGES[nextIdx];
-        const distNext = haversine(posLat, posLon, nv.lat, nv.lon).toFixed(1);
-        msg += `\n➡️ Prochain : <b>${nv.nom}</b> dans ${distNext} km (km ${nv.km})`;
+        msg += `\n➡ ${nv.nom} | ${nv.km}km`;
       }
-      msg += `\n🏁 ${cur.km}/${DIST_TOTALE} km parcourus (${(cur.km/DIST_TOTALE*100).toFixed(0)}%)`;
       envoyerTelegram(msg);
       tgSent.add(closestIdx);
     }

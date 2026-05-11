@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚰 Points Eau — Ultra 40 cols</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#04060a;color:#e8f0f8;font-family:Arial,sans-serif;}
+#header{padding:10px 16px;background:#0a0f18;border-bottom:1px solid #1a2535;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+#header h1{font-size:0.95rem;font-weight:900;letter-spacing:2px;color:#00d4ff;}
+#gps-btn{padding:6px 14px;background:linear-gradient(135deg,#00d4ff,#0090b8);color:#04060a;border:none;border-radius:8px;font-weight:700;font-size:0.78rem;cursor:pointer;letter-spacing:1px;}
+#gps-info{font-size:0.7rem;color:#39ff8f;margin-left:auto;}
+#next-water{font-size:0.72rem;color:#ffd060;}
+#map{height:calc(100vh - 52px);}
+.legend{background:#0a0f18;padding:10px 14px;border-radius:8px;border:1px solid #1a2535;font-size:0.72rem;line-height:2;color:#e8f0f8;}
+.pulse {
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:0.4; }
+}
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>🚰 POINTS EAU & RAVITO</h1>
+  <button id="gps-btn" onclick="startGPS()">📍 MA POSITION</button>
+  <div style="margin-left:auto;text-align:right;">
+    <div id="gps-info">GPS inactif</div>
+    <div id="next-water"></div>
+  </div>
+</div>
+<div id="map"></div>
+
+<script>
+const map = L.map('map').setView([45.93, 5.60], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap', maxZoom:19
+}).addTo(map);
+
+// Points eau
+const EAU_POINTS = [{"km": 11.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 46.0259015, "lon": 5.4993839, "dist": "250m", "color": "#FFD060"}, {"km": 17.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "CImetière de Châtillon-de-Cornelle", "lat": 46.0436909, "lon": 5.4665133, "dist": "91m", "color": "#FFD060"}, {"km": 20.8, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Poncieux", "lat": 46.0408878, "lon": 5.449317, "dist": "241m", "color": "#FFD060"}, {"km": 24.5, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 46.0386793, "lon": 5.4103139, "dist": "340m", "color": "#00D4FF"}, {"km": 24.5, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "Proxi", "lat": 46.0391716, "lon": 5.40966, "dist": "398m", "color": "#FF6B35"}, {"km": 26.9, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 46.0256985, "lon": 5.4041322, "dist": "81m", "color": "#00D4FF"}, {"km": 29.4, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 46.0084239, "lon": 5.42343, "dist": "73m", "color": "#FFD060"}, {"km": 29.7, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 46.00616, "lon": 5.4253599, "dist": "5m", "color": "#00D4FF"}, {"km": 29.7, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 46.0064206, "lon": 5.4241357, "dist": "93m", "color": "#00D4FF"}, {"km": 39.4, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Saint-Rambert-en-Bugey", "lat": 45.9482898, "lon": 5.4355138, "dist": "29m", "color": "#FFD060"}, {"km": 48.1, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cimetière des Allymes", "lat": 45.9728372, "lon": 5.4020371, "dist": "123m", "color": "#FFD060"}, {"km": 48.2, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9729051, "lon": 5.4018587, "dist": "127m", "color": "#00D4FF"}, {"km": 52.5, "emoji": "🛒", "type": "🛒 Supermarché", "nom": "Carrefour Market", "lat": 45.9615334, "lon": 5.3587505, "dist": "192m", "color": "#FF6B35"}, {"km": 52.7, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9582795, "lon": 5.3592397, "dist": "55m", "color": "#39FF8F"}, {"km": 55.1, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cimetière de Bettant", "lat": 45.9439692, "lon": 5.3624699, "dist": "37m", "color": "#FFD060"}, {"km": 55.3, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9426389, "lon": 5.3646375, "dist": "52m", "color": "#00D4FF"}, {"km": 56.1, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9420263, "lon": 5.3585326, "dist": "267m", "color": "#00D4FF"}, {"km": 57.8, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9304315, "lon": 5.3596132, "dist": "270m", "color": "#FFD060"}, {"km": 58, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9302189, "lon": 5.3546906, "dist": "3m", "color": "#00D4FF"}, {"km": 58.1, "emoji": "🛒", "type": "🛒 Supermarché", "nom": "Épicerie Liliane", "lat": 45.929132, "lon": 5.3543397, "dist": "4m", "color": "#FF6B35"}, {"km": 58.1, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9297366, "lon": 5.3518393, "dist": "201m", "color": "#00D4FF"}, {"km": 58.1, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9289246, "lon": 5.3541488, "dist": "6m", "color": "#00D4FF"}, {"km": 58.5, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "Place Corchebois", "lat": 45.9286297, "lon": 5.3558453, "dist": "82m", "color": "#00D4FF"}, {"km": 58.6, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9283549, "lon": 5.3577938, "dist": "19m", "color": "#00D4FF"}, {"km": 58.6, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9300668, "lon": 5.3600166, "dist": "260m", "color": "#00D4FF"}, {"km": 58.6, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9298409, "lon": 5.3599746, "dist": "238m", "color": "#FFD060"}, {"km": 59.5, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "—", "lat": 45.92215, "lon": 5.3639575, "dist": "4m", "color": "#00D4FF"}, {"km": 60.9, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9129144, "lon": 5.3758284, "dist": "12m", "color": "#00D4FF"}, {"km": 67.2, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.8869925, "lon": 5.4068466, "dist": "7m", "color": "#00D4FF"}, {"km": 69.2, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8765209, "lon": 5.4167281, "dist": "8m", "color": "#39FF8F"}, {"km": 69.5, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Souclin", "lat": 45.8760215, "lon": 5.4206488, "dist": "108m", "color": "#FFD060"}, {"km": 84.5, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8329202, "lon": 5.5368854, "dist": "9m", "color": "#39FF8F"}, {"km": 84.8, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.8352794, "lon": 5.5388182, "dist": "3m", "color": "#00D4FF"}, {"km": 85.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8399336, "lon": 5.5365232, "dist": "75m", "color": "#FFD060"}, {"km": 93, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "—", "lat": 45.896001, "lon": 5.4888315, "dist": "12m", "color": "#00D4FF"}, {"km": 93.4, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "—", "lat": 45.8949102, "lon": 5.4854924, "dist": "15m", "color": "#00D4FF"}, {"km": 93.7, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8976637, "lon": 5.4847132, "dist": "191m", "color": "#FFD060"}, {"km": 94, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "—", "lat": 45.8979307, "lon": 5.484644, "dist": "198m", "color": "#00D4FF"}, {"km": 100.2, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9259998, "lon": 5.4431871, "dist": "174m", "color": "#FFD060"}, {"km": 102.9, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9489115, "lon": 5.439942, "dist": "292m", "color": "#39FF8F"}, {"km": 103.7, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "Petit Casino", "lat": 45.9489408, "lon": 5.4407656, "dist": "274m", "color": "#FF6B35"}, {"km": 103.7, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9495442, "lon": 5.4421909, "dist": "251m", "color": "#39FF8F"}, {"km": 108.1, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cimetière d'Oncieu", "lat": 45.9599581, "lon": 5.4782187, "dist": "46m", "color": "#FFD060"}, {"km": 108.4, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9595304, "lon": 5.4741804, "dist": "5m", "color": "#00D4FF"}, {"km": 113.4, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9586521, "lon": 5.4956492, "dist": "191m", "color": "#FFD060"}, {"km": 113.7, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "Bac rond", "lat": 45.960693, "lon": 5.4996876, "dist": "4m", "color": "#00D4FF"}, {"km": 122.3, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9218797, "lon": 5.5095168, "dist": "6m", "color": "#00D4FF"}, {"km": 122.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Tenay", "lat": 45.921883, "lon": 5.5091177, "dist": "36m", "color": "#FFD060"}, {"km": 122.8, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9190558, "lon": 5.5095643, "dist": "8m", "color": "#00D4FF"}, {"km": 122.8, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "Proxi", "lat": 45.9191394, "lon": 5.5088694, "dist": "44m", "color": "#FF6B35"}, {"km": 133.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8720214, "lon": 5.5695758, "dist": "228m", "color": "#FFD060"}, {"km": 137.2, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8896609, "lon": 5.5886225, "dist": "23m", "color": "#39FF8F"}, {"km": 151.9, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9769571, "lon": 5.6005932, "dist": "7m", "color": "#39FF8F"}, {"km": 152, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9779373, "lon": 5.6014126, "dist": "16m", "color": "#39FF8F"}, {"km": 152.7, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9796696, "lon": 5.6078599, "dist": "174m", "color": "#FFD060"}, {"km": 157.6, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9829039, "lon": 5.6346662, "dist": "143m", "color": "#00D4FF"}, {"km": 164.3, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9946115, "lon": 5.6639872, "dist": "14m", "color": "#39FF8F"}, {"km": 168, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "water_point", "lat": 45.9636144, "lon": 5.6601906, "dist": "39m", "color": "#00D4FF"}, {"km": 168.2, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9616381, "lon": 5.6602248, "dist": "11m", "color": "#39FF8F"}, {"km": 168.3, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9609632, "lon": 5.6615366, "dist": "129m", "color": "#39FF8F"}, {"km": 168.3, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.960676, "lon": 5.6595556, "dist": "14m", "color": "#39FF8F"}, {"km": 168.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "grave_yard", "lat": 45.9606586, "lon": 5.66196, "dist": "174m", "color": "#FFD060"}, {"km": 169.5, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9508354, "lon": 5.6569855, "dist": "68m", "color": "#39FF8F"}, {"km": 169.5, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9503702, "lon": 5.6580032, "dist": "9m", "color": "#39FF8F"}, {"km": 169.6, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9492872, "lon": 5.6627021, "dist": "388m", "color": "#FFD060"}, {"km": 169.8, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9479905, "lon": 5.6565825, "dist": "59m", "color": "#39FF8F"}, {"km": 169.9, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9480276, "lon": 5.6563944, "dist": "58m", "color": "#39FF8F"}, {"km": 172.3, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.927519, "lon": 5.6649211, "dist": "11m", "color": "#39FF8F"}, {"km": 172.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Fitigneu", "lat": 45.9278851, "lon": 5.6651485, "dist": "23m", "color": "#FFD060"}, {"km": 174.7, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "grave_yard", "lat": 45.9056525, "lon": 5.6630931, "dist": "334m", "color": "#FFD060"}, {"km": 175, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9059314, "lon": 5.6738264, "dist": "380m", "color": "#FFD060"}, {"km": 177.1, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8917475, "lon": 5.6844139, "dist": "194m", "color": "#39FF8F"}, {"km": 178.2, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8823995, "lon": 5.6897633, "dist": "11m", "color": "#39FF8F"}, {"km": 179.6, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8766842, "lon": 5.6922986, "dist": "10m", "color": "#39FF8F"}, {"km": 180, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "L'Écoserie", "lat": 45.8740849, "lon": 5.692562, "dist": "48m", "color": "#FF6B35"}, {"km": 180, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "water_point", "lat": 45.8744321, "lon": 5.6883907, "dist": "275m", "color": "#00D4FF"}, {"km": 180.1, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8739052, "lon": 5.6881199, "dist": "284m", "color": "#FFD060"}, {"km": 180.2, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8718397, "lon": 5.6941171, "dist": "223m", "color": "#39FF8F"}, {"km": 184.9, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8742363, "lon": 5.6690634, "dist": "343m", "color": "#39FF8F"}, {"km": 185.5, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8761075, "lon": 5.6698043, "dist": "390m", "color": "#39FF8F"}, {"km": 186.3, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8820231, "lon": 5.6660973, "dist": "48m", "color": "#FFD060"}, {"km": 186.5, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8813316, "lon": 5.6617606, "dist": "180m", "color": "#39FF8F"}, {"km": 186.5, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8808581, "lon": 5.6611044, "dist": "247m", "color": "#39FF8F"}, {"km": 187.2, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8883746, "lon": 5.6560466, "dist": "429m", "color": "#39FF8F"}, {"km": 187.3, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8892661, "lon": 5.6563772, "dist": "414m", "color": "#39FF8F"}, {"km": 187.3, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8892212, "lon": 5.6563684, "dist": "414m", "color": "#39FF8F"}, {"km": 194.1, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Saint-Maurice", "lat": 45.914813, "lon": 5.6328562, "dist": "452m", "color": "#FFD060"}, {"km": 201.7, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8937945, "lon": 5.5951724, "dist": "147m", "color": "#FFD060"}, {"km": 213.1, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.8479511, "lon": 5.6513392, "dist": "19m", "color": "#39FF8F"}, {"km": 213.2, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "Petit Casino", "lat": 45.8476755, "lon": 5.6521118, "dist": "26m", "color": "#FF6B35"}, {"km": 213.4, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "grave_yard", "lat": 45.8508228, "lon": 5.6567923, "dist": "388m", "color": "#FFD060"}, {"km": 216.2, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8512194, "lon": 5.6736839, "dist": "332m", "color": "#FFD060"}, {"km": 220.8, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "Le Serieux", "lat": 45.835039, "lon": 5.7265829, "dist": "18m", "color": "#FF6B35"}, {"km": 220.8, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.8352391, "lon": 5.7267514, "dist": "13m", "color": "#00D4FF"}, {"km": 221.1, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière", "lat": 45.8364556, "lon": 5.7293888, "dist": "116m", "color": "#FFD060"}, {"km": 224.2, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Béon", "lat": 45.8531373, "lon": 5.7588523, "dist": "118m", "color": "#FFD060"}, {"km": 226.4, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.8484277, "lon": 5.7835472, "dist": "31m", "color": "#00D4FF"}, {"km": 226.4, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.84828, "lon": 5.7830249, "dist": "12m", "color": "#00D4FF"}, {"km": 226.5, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.849967, "lon": 5.7817577, "dist": "141m", "color": "#39FF8F"}, {"km": 227.1, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.8545215, "lon": 5.7879762, "dist": "192m", "color": "#FFD060"}, {"km": 247.7, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9027032, "lon": 5.7471461, "dist": "5m", "color": "#00D4FF"}, {"km": 254.9, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9286046, "lon": 5.7356359, "dist": "50m", "color": "#39FF8F"}, {"km": 255.1, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9287257, "lon": 5.7290089, "dist": "435m", "color": "#39FF8F"}, {"km": 255.2, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9304267, "lon": 5.7279016, "dist": "455m", "color": "#39FF8F"}, {"km": 255.4, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9323595, "lon": 5.7271265, "dist": "476m", "color": "#FFD060"}, {"km": 257.4, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9475731, "lon": 5.7229287, "dist": "8m", "color": "#00D4FF"}, {"km": 257.4, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9478339, "lon": 5.7218452, "dist": "61m", "color": "#39FF8F"}, {"km": 257.4, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9475937, "lon": 5.7228731, "dist": "9m", "color": "#39FF8F"}, {"km": 257.8, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9490079, "lon": 5.7201696, "dist": "142m", "color": "#FFD060"}, {"km": 258.4, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9552466, "lon": 5.7252744, "dist": "243m", "color": "#39FF8F"}, {"km": 277.8, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "Vival", "lat": 45.9685685, "lon": 5.8098019, "dist": "14m", "color": "#FF6B35"}, {"km": 277.9, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9696619, "lon": 5.8108342, "dist": "65m", "color": "#00D4FF"}, {"km": 283.4, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "water_point", "lat": 46.005047, "lon": 5.7828883, "dist": "155m", "color": "#00D4FF"}, {"km": 283.9, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Chanay", "lat": 46.0096214, "lon": 5.7865891, "dist": "35m", "color": "#FFD060"}, {"km": 285.9, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière", "lat": 46.0222304, "lon": 5.7829262, "dist": "261m", "color": "#FFD060"}, {"km": 287.8, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 46.034485, "lon": 5.7764392, "dist": "396m", "color": "#00D4FF"}, {"km": 290.6, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 46.0562567, "lon": 5.7737745, "dist": "170m", "color": "#FFD060"}, {"km": 290.9, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 46.0586758, "lon": 5.7701612, "dist": "21m", "color": "#39FF8F"}, {"km": 291.1, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 46.0572593, "lon": 5.7695939, "dist": "27m", "color": "#39FF8F"}, {"km": 293.2, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 46.0429428, "lon": 5.755935, "dist": "22m", "color": "#FFD060"}, {"km": 307.1, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9987341, "lon": 5.6932604, "dist": "123m", "color": "#00D4FF"}, {"km": 307.2, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "cemetery", "lat": 45.9977285, "lon": 5.6934453, "dist": "32m", "color": "#FFD060"}, {"km": 307.3, "emoji": "🛒", "type": "🏪 Épicerie", "nom": "Vival", "lat": 45.9973634, "lon": 5.6928476, "dist": "14m", "color": "#FF6B35"}, {"km": 307.3, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9972875, "lon": 5.6925775, "dist": "10m", "color": "#39FF8F"}, {"km": 310, "emoji": "⛪", "type": "⛪ Cimetière (robinet)", "nom": "Cimetière de Ruffieu", "lat": 45.997738, "lon": 5.6643551, "dist": "114m", "color": "#FFD060"}, {"km": 321.8, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9824659, "lon": 5.6045307, "dist": "8m", "color": "#39FF8F"}, {"km": 321.9, "emoji": "🚰", "type": "🚰 Eau potable", "nom": "drinking_water", "lat": 45.9827963, "lon": 5.6040605, "dist": "15m", "color": "#00D4FF"}, {"km": 322, "emoji": "⛲", "type": "⛲ Fontaine", "nom": "fountain", "lat": 45.9842612, "lon": 5.6045461, "dist": "105m", "color": "#39FF8F"}];
+
+EAU_POINTS.forEach(p => {
+    L.circleMarker([p.lat, p.lon], {
+        radius:8, color:p.color, fillColor:p.color, fillOpacity:0.8, weight:2
+    }).bindPopup(`<b>${p.emoji} ${p.type}</b><br>${p.nom}<br>km ${p.km} · ${p.dist}`).addTo(map);
+});
+
+// Légende
+const legend = L.control({position:'bottomright'});
+legend.onAdd = () => {
+    const div = L.DomUtil.create('div','legend');
+    div.innerHTML = '<b style="color:#00d4ff">Légende</b><br><span style="color:#00D4FF">●</span> Eau potable<br><span style="color:#39FF8F">●</span> Fontaine<br><span style="color:#FFD060">●</span> Cimetière<br><span style="color:#FF6B35">●</span> Ravitaillement';
+    return div;
+};
+legend.addTo(map);
+
+// ── POSITION EN TEMPS RÉEL ──
+let posMarker = null;
+let posCircle = null;
+let watchId = null;
+let tracking = false;
+
+function haversine(lat1,lon1,lat2,lon2) {
+    const R=6371000,d2r=Math.PI/180;
+    const dLat=(lat2-lat1)*d2r,dLon=(lon2-lon1)*d2r;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function trouverProchainsPoints(lat, lon) {
+    // Trier par distance et prendre les 3 plus proches
+    const proches = EAU_POINTS
+        .map(p => ({...p, dist_m: haversine(lat, lon, p.lat, p.lon)}))
+        .sort((a,b) => a.dist_m - b.dist_m)
+        .slice(0, 3);
+    return proches;
+}
+
+function startGPS() {
+    if(!navigator.geolocation) {
+        document.getElementById('gps-info').textContent = '❌ GPS non disponible';
+        return;
+    }
+    if(tracking) {
+        navigator.geolocation.clearWatch(watchId);
+        tracking = false;
+        document.getElementById('gps-btn').textContent = '📍 MA POSITION';
+        document.getElementById('gps-info').textContent = 'GPS inactif';
+        document.getElementById('next-water').textContent = '';
+        return;
+    }
+    tracking = true;
+    document.getElementById('gps-btn').textContent = '⏹ STOP GPS';
+    document.getElementById('gps-info').textContent = '🔄 Acquisition GPS...';
+
+    watchId = navigator.geolocation.watchPosition(pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy);
+
+        // Mettre à jour marqueur position
+        if(posMarker) { posMarker.remove(); posCircle.remove(); }
+        posMarker = L.circleMarker([lat, lon], {
+            radius:10, color:'#ffffff', fillColor:'#00d4ff',
+            fillOpacity:1, weight:3
+        }).bindPopup('📍 Vous êtes ici').addTo(map);
+        posCircle = L.circle([lat, lon], {
+            radius:acc, color:'#00d4ff', fillColor:'#00d4ff',
+            fillOpacity:0.08, weight:1
+        }).addTo(map);
+
+        // Centrer la carte
+        map.setView([lat, lon], map.getZoom());
+
+        // Trouver points d'eau proches
+        const proches = trouverProchainsPoints(lat, lon);
+        document.getElementById('gps-info').textContent = `📍 Précision: ${acc}m`;
+        if(proches.length > 0) {
+            const p = proches[0];
+            const dist = p.dist_m < 1000
+                ? Math.round(p.dist_m) + 'm'
+                : (p.dist_m/1000).toFixed(1) + 'km';
+            document.getElementById('next-water').textContent =
+                `${p.emoji} Plus proche: ${p.nom === '—' ? p.type : p.nom} · ${dist}`;
+        }
+    }, err => {
+        document.getElementById('gps-info').textContent = '❌ Erreur GPS: ' + err.message;
+    }, {enableHighAccuracy:true, timeout:10000, maximumAge:5000});
+}
+</script>
+</body>
+</html>

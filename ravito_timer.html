@@ -123,8 +123,6 @@ const TG_TOKEN   = '8365892145:AAEthGgrUicLfX_rj58s6H3LhNExbd1jmlU';
 const TG_CHAT_ID = '8659184335';
 const INTERVALLE = 60 * 60 * 1000; // 1h
 
-// Messages de motivation par heure
-// Index = numéro du ravito (1=après 1h, 2=après 2h, etc.)
 const MESSAGES = {
   0:  "🚵 MB Race démarrée !\nAllez Fabien, c'est parti ! 💪\n🍌 Premier ravito dans 1 heure !",
   1:  "🍌 C'est le moment de manger !\n⏱ 1h de course · Ravito n°1\nT'es frais, le rythme est bon — mange et profites-en !",
@@ -143,51 +141,93 @@ const MESSAGES = {
   14: "🏆 FINISHER !\n⏱ 14h de course\nFabien RONDI — MB Race Ultra 2026 — FINISHER ! 🎉🏆🚵",
 };
 
-let running = false;
-let startTime = null;
-let lastRavito = null;
-let ravitoCpt = 0;
-let timerInterval = null;
+// ── STATE (persisté dans localStorage) ──
+let running       = false;
+let startTime     = null;
+let lastRavito    = null;
+let ravitoCpt     = 0;
+let decalageMin   = 10;
+let telegramMsgId = null;
+let timerInterval    = null;
 let nextRavitoTimeout = null;
-let telegramMsgId = null; // ID du message à éditer
-let decalageMin = 10; // Minutes avant le départ
 
-function setDecalage(min) {
-  decalageMin = min;
-  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('active'));
-  document.getElementById('d' + min).classList.add('active');
+// ── PERSISTENCE localStorage ──
+function sauvegarderEtat() {
+  localStorage.setItem('ravito_state', JSON.stringify({
+    running, startTime, lastRavito, ravitoCpt, decalageMin, telegramMsgId
+  }));
 }
 
-// ── TELEGRAM : envoyer ou éditer ──
+function chargerEtat() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ravito_state'));
+    if(!s || !s.running) return false;
+    running       = s.running;
+    startTime     = s.startTime;
+    lastRavito    = s.lastRavito;
+    ravitoCpt     = s.ravitoCpt;
+    decalageMin   = s.decalageMin || 10;
+    telegramMsgId = s.telegramMsgId;
+    return true;
+  } catch(e) { return false; }
+}
+
+// ── INIT : reprendre si était en cours ──
+window.onload = function() {
+  if(chargerEtat() && running) {
+    // Reprendre le timer
+    document.getElementById('btn-main').textContent = '⏹ STOP';
+    document.getElementById('btn-main').className = 'btn btn-stop';
+    document.getElementById('count-ravito').textContent = ravitoCpt;
+    setDecalage(decalageMin);
+
+    timerInterval = setInterval(updateDisplay, 1000);
+
+    // Calculer quand doit être le prochain ravito
+    const prochainRavitoAt = lastRavito + INTERVALLE;
+    const resteMs = prochainRavitoAt - Date.now();
+
+    if(resteMs <= 0) {
+      // Ravito en retard ! Déclencher immédiatement
+      setTimeout(declencherRavito, 500);
+    } else {
+      nextRavitoTimeout = setTimeout(declencherRavito, resteMs);
+    }
+    showToast('⏱ Timer repris !', 'green');
+  } else {
+    running = false;
+    setDecalage(10);
+  }
+};
+
+// ── TELEGRAM : envoyer OU éditer ──
 async function envoyerOuEditer(texte) {
   try {
     let url, body;
     if(telegramMsgId) {
-      // Éditer le message existant
-      url = `https://api.telegram.org/bot${TG_TOKEN}/editMessageText`;
+      url  = 'https://api.telegram.org/bot' + TG_TOKEN + '/editMessageText';
       body = { chat_id: TG_CHAT_ID, message_id: telegramMsgId, text: texte };
     } else {
-      // Créer le premier message
-      url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`;
+      url  = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage';
       body = { chat_id: TG_CHAT_ID, text: texte };
     }
     const r = await fetch(url, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(body)
     });
     const d = await r.json();
     if(d.ok) {
       if(!telegramMsgId) telegramMsgId = d.result.message_id;
+      sauvegarderEtat();
       addLog(texte.split('\n')[0]);
       document.getElementById('motivation-text').textContent = texte.split('\n')[0];
-      showToast('✈️ Message envoyé !', 'green');
+      showToast('✈️ Telegram envoyé !', 'green');
     } else {
-      // Si édition échoue (message trop vieux), envoyer un nouveau
-      if(telegramMsgId) {
-        telegramMsgId = null;
-        await envoyerOuEditer(texte);
-      }
+      // Message trop vieux pour être édité → en créer un nouveau
+      telegramMsgId = null;
+      sauvegarderEtat();
+      await envoyerOuEditer(texte);
     }
   } catch(e) {
     showToast('❌ Erreur réseau', '');
@@ -212,21 +252,19 @@ function startTimer() {
 
   document.getElementById('btn-main').textContent = '⏹ STOP';
   document.getElementById('btn-main').className = 'btn btn-stop';
+  document.getElementById('count-ravito').textContent = 0;
 
-  // Message de départ
-  envoyerOuEditer(MESSAGES[0]);
+  // Message de départ en LOCAL uniquement (pas Telegram)
+  // Pour ne pas créer de bulle séparée — le premier ravito créera le message
+  document.getElementById('motivation-text').textContent = '🚵 Course démarrée ! Premier ravito dans 1h';
+  addLog('🚵 Course démarrée !');
 
-  // Lancer l'affichage toutes les secondes
+  sauvegarderEtat();
   timerInterval = setInterval(updateDisplay, 1000);
 
-  // Premier ravito : 1h après le DÉPART RÉEL
-  // Si on lance 10min avant → premier ravito dans 50min
-  const premierRavitoMs = Math.max(1000, INTERVALLE - (decalageMin * 60 * 1000));
-  console.log('Premier ravito dans', Math.round(premierRavitoMs/60000), 'min');
-
-  nextRavitoTimeout = setTimeout(function() {
-    declencherRavito();
-  }, premierRavitoMs);
+  // Premier ravito : 1h après le départ réel
+  const premierRavitoMs = Math.max(5000, INTERVALLE - (decalageMin * 60 * 1000));
+  nextRavitoTimeout = setTimeout(declencherRavito, premierRavitoMs);
 
   showToast('🚵 Course démarrée !', 'green');
 }
@@ -236,66 +274,73 @@ function declencherRavito() {
   ravitoCpt++;
   lastRavito = Date.now();
   document.getElementById('count-ravito').textContent = ravitoCpt;
+  sauvegarderEtat();
   const msg = MESSAGES[ravitoCpt] || MESSAGES[14];
   envoyerOuEditer(msg);
-  // Programmer le suivant dans exactement 1h
-  nextRavitoTimeout = setTimeout(function() {
-    declencherRavito();
-  }, INTERVALLE);
+  // Prochain dans 1h pile
+  nextRavitoTimeout = setTimeout(declencherRavito, INTERVALLE);
 }
 
 function stopTimer() {
   running = false;
   clearInterval(timerInterval);
   clearTimeout(nextRavitoTimeout);
+  localStorage.removeItem('ravito_state');
   document.getElementById('btn-main').textContent = '▶ DÉMARRER';
   document.getElementById('btn-main').className = 'btn btn-start';
-  document.getElementById('timer-sub').textContent = 'Timer arrêté';
+  document.getElementById('timer-sub').textContent = 'Appuie sur DÉMARRER au départ';
   document.getElementById('next-time').textContent = '—';
+  document.getElementById('motivation-text').textContent = 'En attente du départ...';
   showToast('⏹ Timer arrêté', '');
 }
 
-// programmerProchainRavito remplacé par declencherRavito
-
+// ── AFFICHAGE ──
 function updateDisplay() {
   if(!running) return;
   const now = Date.now();
 
-  // Timer depuis dernier ravito
   const depuisSec = Math.floor((now - lastRavito) / 1000);
   const m = Math.floor(depuisSec / 60);
   const s = depuisSec % 60;
   const el = document.getElementById('timer-display');
-  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   el.className = m >= 50 ? 'timer-display urgent' : 'timer-display';
   document.getElementById('timer-sub').textContent = m >= 50
     ? '⚠️ Mange maintenant !'
     : 'Prochain ravito automatique dans...';
 
-  // Temps avant prochain
   const resteSec = Math.max(0, Math.floor((INTERVALLE - (now - lastRavito)) / 1000));
   const rm = Math.floor(resteSec / 60);
   const rs = resteSec % 60;
-  document.getElementById('next-time').textContent = `${String(rm).padStart(2,'0')}:${String(rs).padStart(2,'0')}`;
+  document.getElementById('next-time').textContent = String(rm).padStart(2,'0') + ':' + String(rs).padStart(2,'0');
   document.getElementById('next-sub').textContent = rm < 5 ? '⚠️ Prépare ton ravito !' : 'toutes les heures';
 
-  // Temps course total
   const courseSec = Math.floor((now - startTime) / 1000);
   const hC = Math.floor(courseSec / 3600);
   const mC = Math.floor((courseSec % 3600) / 60);
-  document.getElementById('count-course').textContent = `${hC}h${String(mC).padStart(2,'0')}`;
+  document.getElementById('count-course').textContent = hC + 'h' + String(mC).padStart(2,'0');
 }
 
+// ── DÉCALAGE ──
+function setDecalage(min) {
+  decalageMin = min;
+  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('d' + min);
+  if(el) el.classList.add('active');
+}
+
+// ── LOG ──
 function addLog(msg) {
   const now = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
   const log = document.getElementById('log-list');
   const item = document.createElement('div');
   item.className = 'log-item';
-  item.innerHTML = `<span class="log-time">${now}</span><span class="log-msg">${msg.substring(0,45)}</span>`;
+  item.innerHTML = '<span class="log-time">' + now + '</span><span class="log-msg">' + msg.substring(0,45) + '</span>';
   log.prepend(item);
   while(log.children.length > 10) log.removeChild(log.lastChild);
 }
 
+// ── TOAST ──
 function showToast(msg, type='') {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast show ' + type;

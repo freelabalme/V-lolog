@@ -204,31 +204,44 @@ function toggleTimer() {
 }
 
 function startTimer() {
-  running    = true;
-  startTime  = Date.now();
-  lastRavito = Date.now();
-  ravitoCpt  = 0;
+  running       = true;
+  startTime     = Date.now();
+  lastRavito    = Date.now();
+  ravitoCpt     = 0;
   telegramMsgId = null;
 
   document.getElementById('btn-main').textContent = '⏹ STOP';
   document.getElementById('btn-main').className = 'btn btn-stop';
 
-  // Message de départ — ne compte PAS comme ravito, timer repart à zéro
+  // Message de départ
   envoyerOuEditer(MESSAGES[0]);
+
+  // Lancer l'affichage toutes les secondes
   timerInterval = setInterval(updateDisplay, 1000);
 
-  // Premier ravito dans 1h depuis le DÉPART RÉEL (pas depuis le lancement)
-  const premierRavitoMs = INTERVALLE - (decalageMin * 60 * 1000);
-  nextRavitoTimeout = setTimeout(() => {
-    if(!running) return;
-    ravitoCpt = 1;
-    lastRavito = Date.now();
-    document.getElementById('count-ravito').textContent = ravitoCpt;
-    envoyerOuEditer(MESSAGES[1]);
-    programmerProchainRavito();
+  // Premier ravito : 1h après le DÉPART RÉEL
+  // Si on lance 10min avant → premier ravito dans 50min
+  const premierRavitoMs = Math.max(1000, INTERVALLE - (decalageMin * 60 * 1000));
+  console.log('Premier ravito dans', Math.round(premierRavitoMs/60000), 'min');
+
+  nextRavitoTimeout = setTimeout(function() {
+    declencherRavito();
   }, premierRavitoMs);
 
   showToast('🚵 Course démarrée !', 'green');
+}
+
+function declencherRavito() {
+  if(!running) return;
+  ravitoCpt++;
+  lastRavito = Date.now();
+  document.getElementById('count-ravito').textContent = ravitoCpt;
+  const msg = MESSAGES[ravitoCpt] || MESSAGES[14];
+  envoyerOuEditer(msg);
+  // Programmer le suivant dans exactement 1h
+  nextRavitoTimeout = setTimeout(function() {
+    declencherRavito();
+  }, INTERVALLE);
 }
 
 function stopTimer() {
@@ -242,19 +255,7 @@ function stopTimer() {
   showToast('⏹ Timer arrêté', '');
 }
 
-function programmerProchainRavito() {
-  if(!running) return;
-  const resteMs = INTERVALLE - (Date.now() - lastRavito);
-  nextRavitoTimeout = setTimeout(() => {
-    if(!running) return;
-    ravitoCpt++;
-    lastRavito = Date.now();
-    document.getElementById('count-ravito').textContent = ravitoCpt;
-    const msg = MESSAGES[ravitoCpt] || MESSAGES[14];
-    envoyerOuEditer(msg);
-    programmerProchainRavito();
-  }, resteMs > 0 ? resteMs : INTERVALLE);
-}
+// programmerProchainRavito remplacé par declencherRavito
 
 function updateDisplay() {
   if(!running) return;

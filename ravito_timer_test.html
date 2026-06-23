@@ -149,6 +149,7 @@ let ravitoCpt     = 0;
 let decalageMin   = 10;
 let telegramMsgId = null;
 let timerInterval    = null;
+let envoiEnCours     = false;
 let nextRavitoTimeout = null;
 
 // ── PERSISTENCE localStorage ──
@@ -262,9 +263,10 @@ function startTimer() {
   sauvegarderEtat();
   timerInterval = setInterval(updateDisplay, 1000);
 
-  // Premier ravito : 1h après le départ réel
-  const premierRavitoMs = Math.max(5000, INTERVALLE - (decalageMin * 60 * 1000));
-  nextRavitoTimeout = setTimeout(declencherRavito, premierRavitoMs);
+  // Premier ravito détecté automatiquement par updateDisplay
+  // On ajuste lastRavito pour tenir compte du décalage
+  lastRavito = Date.now() + (decalageMin * 60 * 1000) - INTERVALLE;
+  sauvegarderEtat();
 
   showToast('🚵 Course démarrée !', 'green');
 }
@@ -277,8 +279,7 @@ function declencherRavito() {
   sauvegarderEtat();
   const msg = MESSAGES[ravitoCpt] || MESSAGES[14];
   envoyerOuEditer(msg);
-  // Prochain dans 1h pile
-  nextRavitoTimeout = setTimeout(declencherRavito, INTERVALLE);
+  // PAS de setTimeout — c'est updateDisplay qui détecte quand 1h est écoulée
 }
 
 function stopTimer() {
@@ -319,6 +320,14 @@ function updateDisplay() {
   const hC = Math.floor(courseSec / 3600);
   const mC = Math.floor((courseSec % 3600) / 60);
   document.getElementById('count-course').textContent = hC + 'h' + String(mC).padStart(2,'0');
+
+  // Vérifier si un ravito est dû (même si setTimeout raté à cause de la veille)
+  const depuisRavitoMs = now - lastRavito;
+  if(depuisRavitoMs >= INTERVALLE && !envoiEnCours) {
+    envoiEnCours = true;
+    declencherRavito();
+    setTimeout(() => { envoiEnCours = false; }, 5000);
+  }
 }
 
 // ── DÉCALAGE ──
